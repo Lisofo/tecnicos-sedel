@@ -30,19 +30,14 @@ class _PtosInspeccionActividadState extends State<PtosInspeccionActividad> {
   bool isReadOnly = true;
   late TipoPtosInspeccion tPISeleccionado = TipoPtosInspeccion.empty();
   late List<RevisionPtoInspeccion> ptoInspeccionSeleccionados = [];
-
   List<TareaXtpi> tareas = [];
-
   List<PlagaXtpi> plagas = [];
   List<PtoPlaga> plagasSeleccionadas = [];
   late PlagaXtpi plagaSeleccionada = PlagaXtpi.empty();
-
   List<Lote> lotesVencimientos = [];
-
   TextEditingController cantidadController = TextEditingController();
   TextEditingController cantidadControllerMateriales = TextEditingController();
   final ScrollController _scrollController = ScrollController();
-
   MaterialXtpi? materialSeleccionado;
   Lote? loteSeleccionado;
   late String menu = context.read<OrdenProvider>().menu;
