@@ -214,15 +214,13 @@ class _ListaOrdenesState extends State<ListaOrdenes> {
                                     width: 10,
                                   ),
                                   Text(
-                                    DateFormat('EEEEEE d, MMMM yyyy', 'es').format(ordenesFiltradas[i].fechaOrdenTrabajo),
+                                    DateFormat('EEEE d, MMMM yyyy', 'es').format(ordenesFiltradas[i].fechaOrdenTrabajo),
                                   ),
                                   const Expanded(child: Text('')),
                                   Text(ordenesFiltradas[i].tipoOrden.descripcion),
                                 ],
                               ),
-                              Text(
-                                '${ordenesFiltradas[i].cliente.codCliente} - ${ordenesFiltradas[i].cliente.nombre}',
-                              ),
+                              Text('${ordenesFiltradas[i].cliente.codCliente} - ${ordenesFiltradas[i].cliente.nombre}',),
                               Text(ordenesFiltradas[i].cliente.direccion),
                               Text(ordenesFiltradas[i].cliente.telefono1),
                               Text(ordenesFiltradas[i].cliente.notas),
