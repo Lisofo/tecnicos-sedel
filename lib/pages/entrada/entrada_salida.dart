@@ -156,7 +156,7 @@ class _EntradSalidaState extends State<EntradSalida> {
             child: const Padding(
               padding: EdgeInsets.only(left: 16, right: 16, top: 10, bottom: 5),
               child: Text(
-                'daiana@sedel.com.uy | 23623375 Int. 206 y 207 | +598 98 409 523',
+                'calidad@sedel.com.uy | daiana@sedel.com.uy \n23623375 Int. 206 y 207 | 098 409 523 / 092 535 793',
                 style: TextStyle(fontWeight: FontWeight.bold),
               ),
             ),

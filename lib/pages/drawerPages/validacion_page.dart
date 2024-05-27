@@ -2,7 +2,6 @@ import 'package:app_tec_sedel/models/control_orden.dart';
 import 'package:app_tec_sedel/models/orden.dart';
 import 'package:app_tec_sedel/providers/orden_provider.dart';
 import 'package:app_tec_sedel/services/orden_control_services.dart';
-import 'package:app_tec_sedel/widgets/custom_button.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -89,17 +88,17 @@ class _ValidacionPageState extends State<ValidacionPage> {
           ],
         ),
       ),
-      bottomNavigationBar: BottomAppBar(
-        notchMargin: 10,
-        elevation: 0,
-        shape: const CircularNotchedRectangle(),
-        color: Colors.grey.shade200,
-        child: CustomButton(
-          onPressed: () {},
-          text: 'Confirmar',
-          tamano: 20,
-        ),
-      ),
+      // bottomNavigationBar: BottomAppBar(
+      //   notchMargin: 10,
+      //   elevation: 0,
+      //   shape: const CircularNotchedRectangle(),
+      //   color: Colors.grey.shade200,
+      //   child: CustomButton(
+      //     onPressed: () {},
+      //     text: 'Confirmar',
+      //     tamano: 20,
+      //   ),
+      // ),
       backgroundColor: Colors.grey.shade200,
     );
   }
