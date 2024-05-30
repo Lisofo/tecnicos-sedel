@@ -60,7 +60,7 @@ class OrdenControlServices{
   }
 
   Future getControlOrden(BuildContext context, Orden orden, String token) async {
-    String link = '$apiLink${orden.ordenTrabajoId}/controles';
+    String link = '$apiLink${orden.ordenTrabajoId}/revisiones/${orden.otRevisionId}/controles';
 
     try {
       var headers = {'Authorization': token};
@@ -98,9 +98,9 @@ class OrdenControlServices{
     }
   }
 
-  Future putControl(BuildContext context,Orden orden, ControlOrden control, String token) async {
+  Future putControl(BuildContext context, Orden orden, ControlOrden control, String token) async {
     try {
-      String link = '$apiLink${orden.ordenTrabajoId}/controles/${control.controlRegId}';
+      String link = '$apiLink${orden.ordenTrabajoId}/revisiones/${orden.otRevisionId}/controles/${control.controlRegId}';
       var headers = {'Authorization': token};
 
       final resp = await _dio.request(link,
@@ -136,7 +136,7 @@ class OrdenControlServices{
 
   Future postControl(BuildContext context, Orden orden, ControlOrden control, String token) async {
     try {
-      String link = '$apiLink${orden.ordenTrabajoId}/controles/';
+      String link = '$apiLink${orden.ordenTrabajoId}/revisiones/${orden.otRevisionId}/controles/';
       var headers = {'Authorization': token};
       var data = control.toMap();
       final resp = await _dio.request(link,
