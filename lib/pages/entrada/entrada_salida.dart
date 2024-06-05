@@ -203,8 +203,7 @@ class _EntradSalidaState extends State<EntradSalida> {
   }
 
   marcarSalida() async {
-    List<Orden> ordenesEnProceso =
-        context.read<OrdenProvider>().ordenesEnProceso;
+    List<Orden> ordenesEnProceso = context.read<OrdenProvider>().ordenesEnProceso;
 
     if (!ejecutandoSalida) {
       ejecutandoSalida = true;
@@ -233,9 +232,7 @@ class _EntradSalidaState extends State<EntradSalida> {
             );
           },
         );
-        ordenesEnProceso = ordenesEnProceso
-            .where((orden) => orden.estado == 'EN PROCESO')
-            .toList();
+        ordenesEnProceso = ordenesEnProceso.where((orden) => orden.estado == 'EN PROCESO').toList();
         if (ordenesEnProceso.isEmpty && confirmacion == true) {
           await obtenerUbicacion();
           int ubicacionId = ubicacion.ubicacionId;

@@ -258,15 +258,16 @@ class _PtosInspeccionPageState extends State<PtosInspeccionPage> {
                     }
                   ),
                   const Spacer(),
-                  Switch(
-                    activeColor: colors.primary,
-                    value: filtro2,
-                    onChanged: (value) async {
-                      filtro2 = value;
-                      tiposDePuntos = await getTipos();
-                      setState(() {});
-                    }
-                  ),
+                  // Switch(
+                  //   activeColor: colors.primary,
+                  //   value: filtro2,
+                  //   onChanged: (value) async {
+                  //     filtro2 = value;
+                  //     tiposDePuntos = [];
+                  //     tiposDePuntos = await getTipos();
+                  //     setState(() {});
+                  //   }
+                  // ),
                   Checkbox(
                     activeColor: colors.primary,
                     value: selectAll,
