@@ -37,6 +37,7 @@ class _PtosInspeccionPageState extends State<PtosInspeccionPage> {
   late PlagaObjetivo plagaObjetivoSeleccionada = PlagaObjetivo.empty();
   bool selectAll = false;
   bool filtro = false;
+  bool filtro2 = false;
   late String token = '';
   late Orden orden = Orden.empty();
   late int marcaId = 0;
@@ -86,12 +87,22 @@ class _PtosInspeccionPageState extends State<PtosInspeccionPage> {
     token = context.read<OrdenProvider>().token;
     orden = context.read<OrdenProvider>().orden;
     marcaId = context.read<OrdenProvider>().marcaId;
-    tiposDePuntos = await PtosInspeccionServices().getTiposPtosInspeccion(token);
     ptosInspeccion = await PtosInspeccionServices().getPtosInspeccion(context, orden, token);
+    tiposDePuntos = await getTipos();
     plagasObjetivo = await PlagaServices().getPlagasObjetivo(context, token);
     Provider.of<OrdenProvider>(context, listen: false).setTipoPTI(selectedTipoPto);
     setState(() {});
   }
+
+  Future<dynamic> getTipos() async {
+    late List<TipoPtosInspeccion> tiposDePuntosFiltrados = [];
+    if(!filtro2){
+      tiposDePuntosFiltrados = await PtosInspeccionServices().getTiposPtosInspeccion(token);
+      return tiposDePuntosFiltrados.where((pto)=> cantidadSolo(pto) > 0).toList();
+    } else {
+      return await PtosInspeccionServices().getTiposPtosInspeccion(token);
+    }
+  } 
 
   Future<void> refreshData() async {
     ptosInspeccion = await PtosInspeccionServices().getPtosInspeccion(context, orden, token);
@@ -247,6 +258,15 @@ class _PtosInspeccionPageState extends State<PtosInspeccionPage> {
                     }
                   ),
                   const Spacer(),
+                  Switch(
+                    activeColor: colors.primary,
+                    value: filtro2,
+                    onChanged: (value) async {
+                      filtro2 = value;
+                      tiposDePuntos = await getTipos();
+                      setState(() {});
+                    }
+                  ),
                   Checkbox(
                     activeColor: colors.primary,
                     value: selectAll,
@@ -287,7 +307,14 @@ class _PtosInspeccionPageState extends State<PtosInspeccionPage> {
     String retorno = '';
     String cantidad = ptosInspeccion.where((pto) => pto.tipoPuntoInspeccionId == e.tipoPuntoInspeccionId).toList().length.toString();
     retorno = '${e.descripcion} ($cantidad)';
+    print(retorno);
     return retorno;
+  }
+
+  int cantidadSolo(TipoPtosInspeccion e) {
+    int cantidad = ptosInspeccion.where((pto) => pto.tipoPuntoInspeccionId == e.tipoPuntoInspeccionId).toList().length;
+    print(cantidad);
+    return cantidad;
   }
 
   listaDePuntos() {

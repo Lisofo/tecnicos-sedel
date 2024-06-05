@@ -294,7 +294,7 @@ class _PtosInspeccionActividadState extends State<PtosInspeccionActividad> {
                       setState(() {
                         materialSeleccionado = value;
                       });
-                      mostrarPopupCantidadMateriales();
+                      mostrarPopupCantidadMateriales(materialSeleccionado!);
                     },
                     value: materialSeleccionado,
                   ),
@@ -543,7 +543,7 @@ class _PtosInspeccionActividadState extends State<PtosInspeccionActividad> {
     );
   }
 
-  mostrarPopupCantidadMateriales() async {
+  mostrarPopupCantidadMateriales(MaterialXtpi material) async {
     await cargarLotes();
 
     showDialog(
@@ -553,8 +553,10 @@ class _PtosInspeccionActividadState extends State<PtosInspeccionActividad> {
           surfaceTintColor: Colors.white,
           title: const Text('Cantidad de materiales'),
           content: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
             mainAxisSize: MainAxisSize.min,
             children: [
+              Text('Unidad: ${material.unidad}'),
               TextField(
                 controller: cantidadControllerMateriales,
                 keyboardType: TextInputType.number,

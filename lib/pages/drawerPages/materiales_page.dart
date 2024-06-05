@@ -1,5 +1,6 @@
 // ignore_for_file: use_build_context_synchronously, avoid_init_to_null, void_checks, avoid_print
 
+import 'package:app_tec_sedel/config/router/router.dart';
 import 'package:app_tec_sedel/models/manuales_materiales.dart';
 import 'package:app_tec_sedel/models/material.dart';
 import 'package:app_tec_sedel/models/orden.dart';
@@ -10,6 +11,7 @@ import 'package:app_tec_sedel/services/materiales_services.dart';
 import 'package:app_tec_sedel/services/plagas_services.dart';
 import 'package:dio/dio.dart';
 import 'package:dropdown_search/dropdown_search.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -90,7 +92,7 @@ class _MaterialesPageState extends State<MaterialesPage> {
                   child: const Text('Ver Manuales', style: TextStyle(fontSize: 16, decoration: TextDecoration.underline),)
                 ),
                 const SizedBox(height: 16),
-                const Text('Cantidad:'),
+                const Text('* Cantidad:'),
                 TextField(
                   keyboardType: TextInputType.number,
                   onChanged: (value) {
@@ -98,7 +100,7 @@ class _MaterialesPageState extends State<MaterialesPage> {
                   },
                 ),
                 const SizedBox(height: 16),
-                const Text('Lote:'),
+                Text(lotes.isEmpty ? 'Lote:' : '* Lote:'),
                 DropdownSearch(
                   items: lotes,
                   onChanged: (newValue) {
@@ -108,7 +110,7 @@ class _MaterialesPageState extends State<MaterialesPage> {
                   },
                 ),
                 const SizedBox(height: 16),
-                const Text('Método de Aplicación:'),
+                const Text('* Método de Aplicación:'),
                 DropdownSearch(
                   items: metodosAplicacion,
                   onChanged: (newValue) {
@@ -120,7 +122,7 @@ class _MaterialesPageState extends State<MaterialesPage> {
                 const SizedBox(
                   height: 16,
                 ),
-                const Text('Plagas:'),
+                const Text('* Plagas:'),
                 DropdownSearch<Plaga>.multiSelection(
                   items: plagas,
                   popupProps: const PopupPropsMultiSelection.menu(
@@ -132,7 +134,7 @@ class _MaterialesPageState extends State<MaterialesPage> {
                   },
                 ),
                 const SizedBox(height: 16),
-                const Text('Ubicación:'),
+                const Text('* Ubicación:'),
                 TextField(
                   onChanged: (value) {
                     ubicacion = value;
@@ -157,31 +159,42 @@ class _MaterialesPageState extends State<MaterialesPage> {
               TextButton(
                 child: const Text('Guardar'),
                 onPressed: () async {
-                  late List<int> plagasIds = [];
-
-                  final RevisionMaterial nuevaRevisionMaterial =
+                  if(cantidad != '' && ubicacion != '' && plagasSeleccionadas.isNotEmpty && (lotes.isNotEmpty && selectedLote!.materialLoteId != 0) && (metodosAplicacion.isNotEmpty && selectedMetodo!.metodoAplicacionId != 0)){
+                    late List<int> plagasIds = [];
+                    final RevisionMaterial nuevaRevisionMaterial =
                       RevisionMaterial(
-                          otMaterialId: 0,
-                          ordenTrabajoId: orden.ordenTrabajoId,
-                          otRevisionId: orden.otRevisionId,
-                          cantidad: esNumerico(cantidad)
-                              ? double.parse(cantidad)
-                              : double.parse("0.0"),
-                          comentario: '',
-                          ubicacion: ubicacion,
-                          areaCobertura: areaCobertura,
-                          plagas: plagasSeleccionadas,
-                          material: material,
-                          lote: selectedLote!,
-                          metodoAplicacion: selectedMetodo!);
-                  for (var i = 0; i < plagasSeleccionadas.length; i++) {
-                    plagasIds.add(plagasSeleccionadas[i].plagaId);
+                        otMaterialId: 0,
+                        ordenTrabajoId: orden.ordenTrabajoId,
+                        otRevisionId: orden.otRevisionId,
+                        cantidad: esNumerico(cantidad) ? double.parse(cantidad) : double.parse("0.0"),//
+                        comentario: '',
+                        ubicacion: ubicacion,//
+                        areaCobertura: areaCobertura,
+                        plagas: plagasSeleccionadas,//
+                        material: material,
+                        lote: selectedLote!,//
+                        metodoAplicacion: selectedMetodo!//
+                      );
+                    for (var i = 0; i < plagasSeleccionadas.length; i++) {
+                      plagasIds.add(plagasSeleccionadas[i].plagaId);
+                    }
+                    await MaterialesServices().postRevisionMaterial(context, orden, plagasIds, nuevaRevisionMaterial, token);
+                    revisionMaterialesList.add(nuevaRevisionMaterial);
+                    setState(() {});
+                  } else {
+                    showDialog(
+                      context: context, 
+                      builder: (BuildContext context){
+                        return AlertDialog(
+                          title: const Text('Error'),
+                          content: const Text('Faltan campos por completar'),
+                          actions: [
+                            TextButton(onPressed: ()=> router.pop(), child: const Text('Cerrar'))
+                          ],
+                        );
+                      }
+                    );
                   }
-                  await MaterialesServices().postRevisionMaterial(
-                      context, orden, plagasIds, nuevaRevisionMaterial, token);
-                  revisionMaterialesList.add(nuevaRevisionMaterial);
-
-                  setState(() {});
                 },
               ),
             ],
@@ -320,8 +333,7 @@ class _MaterialesPageState extends State<MaterialesPage> {
                               setState(() {
                                 revisionMaterialesList.removeAt(i);
                               });
-                              ScaffoldMessenger.of(context)
-                                  .showSnackBar(SnackBar(
+                              ScaffoldMessenger.of(context).showSnackBar(SnackBar(
                                 content: Text('$item borrado'),
                               ));
                             },

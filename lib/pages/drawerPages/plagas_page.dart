@@ -94,6 +94,11 @@ class _PlagasPageState extends State<PlagasPage> {
                         color: colors.primary),
                     borderRadius: BorderRadius.circular(5)),
                 child: DropdownSearch(
+                  dropdownDecoratorProps: const DropDownDecoratorProps(
+                    dropdownSearchDecoration: InputDecoration(
+                      hintText: 'Seleccione una plaga'
+                    )
+                  ),
                   items: plagas,
                   popupProps: const PopupProps.menu(
                     showSearchBox: true, searchDelay: Duration.zero
@@ -107,14 +112,20 @@ class _PlagasPageState extends State<PlagasPage> {
             const SizedBox(height: 30,),
             Container(
               decoration: BoxDecoration(
-                  border: Border.all(
-                    width: 2,
-                    color: colors.primary),
-                  borderRadius: BorderRadius.circular(5)),
+                border: Border.all(
+                  width: 2,
+                  color: colors.primary),
+                borderRadius: BorderRadius.circular(5)
+              ),
               child: DropdownSearch(
+                dropdownDecoratorProps: const DropDownDecoratorProps(
+                  dropdownSearchDecoration: InputDecoration(
+                    hintText: 'Seleccione un grado de infestación'
+                  )
+                ),
                 items: gradoInfeccion,
                 popupProps: const PopupProps.menu(
-                    showSearchBox: true, searchDelay: Duration.zero),
+                  showSearchBox: true, searchDelay: Duration.zero),
                 onChanged: (value) {
                   setState(() {
                     selectedGrado = value;
@@ -136,13 +147,20 @@ class _PlagasPageState extends State<PlagasPage> {
                       ));
                       return Future.value(false);
                     }
-                    bool agregarPlaga = true;
-                    if (revisionPlagasList.isNotEmpty) {
-                      agregarPlaga = !revisionPlagasList.any((plaga) => plaga.plagaId == selectedPlaga.plagaId);
-                    }
-                    if (agregarPlaga) {
-                      await posteoRevisionPlaga(context);
-                      setState(() {});
+                    if(selectedGrado.gradoInfestacionId != 0){
+                      bool agregarPlaga = true;
+                      if (revisionPlagasList.isNotEmpty) {
+                        agregarPlaga = !revisionPlagasList.any((plaga) => plaga.plagaId == selectedPlaga.plagaId);
+                      }
+                      if (agregarPlaga) {
+                        await posteoRevisionPlaga(context);
+                        setState(() {});
+                      }
+                    } else {
+                      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+                        content: Text('Seleccione un grado de infestación'),
+                      ));
+                      return Future.value(false);
                     }
                   },
                   text: 'Agregar +',

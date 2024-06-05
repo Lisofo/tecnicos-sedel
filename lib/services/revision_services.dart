@@ -296,9 +296,7 @@ class RevisionServices {
       );
       final List<dynamic> revisionPlagasList = resp.data;
 
-      return revisionPlagasList
-          .map((obj) => RevisionPlaga.fromJson(obj))
-          .toList();
+      return revisionPlagasList.map((obj) => RevisionPlaga.fromJson(obj)).toList();
     } catch (e) {
       print(e);
     }

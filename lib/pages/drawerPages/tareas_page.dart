@@ -68,10 +68,17 @@ class _TareasPageState extends State<TareasPage> {
             children: [
               Container(
                 decoration: BoxDecoration(
-                    border: Border.all(
-                        width: 1, color: colors.primary),
-                    borderRadius: BorderRadius.circular(5)),
+                  border: Border.all(
+                    width: 1, color: colors.primary
+                  ),
+                  borderRadius: BorderRadius.circular(5)
+                ),
                 child: DropdownSearch(
+                  dropdownDecoratorProps: const DropDownDecoratorProps(
+                  dropdownSearchDecoration: InputDecoration(
+                    hintText: 'Seleccione una tarea'
+                  )
+                ),
                   items: tareas,
                   popupProps: const PopupProps.menu(
                       showSearchBox: true, searchDelay: Duration.zero),
@@ -82,9 +89,7 @@ class _TareasPageState extends State<TareasPage> {
                   },
                 ),
               ),
-              const SizedBox(
-                height: 20,
-              ),
+              const SizedBox(height: 20,),
               Row(
                 mainAxisAlignment: MainAxisAlignment.end,
                 children: [
@@ -110,12 +115,9 @@ class _TareasPageState extends State<TareasPage> {
                   ),
                 ],
               ),
-              const SizedBox(
-                height: 20,
-              ),
+              const SizedBox(height: 20,),
               Container(
-                constraints: BoxConstraints(
-                    maxHeight: MediaQuery.of(context).size.height * 0.6),
+                constraints: BoxConstraints(maxHeight: MediaQuery.of(context).size.height * 0.6),
                 child: ListView.builder(
                   controller: _scrollController,
                   itemCount: revisionTareasList.length,
@@ -132,31 +134,33 @@ class _TareasPageState extends State<TareasPage> {
                           return Future.value(false);
                         }
                         return showDialog(
-                            context: context,
-                            builder: (BuildContext context) {
-                              return AlertDialog(
-                                surfaceTintColor: Colors.white,
-                                title: const Text("Confirmar"),
-                                content: const Text(
-                                    "¿Estas seguro de querer borrar la tarea?"),
-                                actions: <Widget>[
-                                  TextButton(
-                                    onPressed: () =>
-                                        Navigator.of(context).pop(false),
-                                    child: const Text("CANCELAR"),
+                          context: context,
+                          builder: (BuildContext context) {
+                            return AlertDialog(
+                              surfaceTintColor: Colors.white,
+                              title: const Text("Confirmar"),
+                              content: const Text(
+                                "¿Estas seguro de querer borrar la tarea?"
+                              ),
+                              actions: <Widget>[
+                                TextButton(
+                                  onPressed: () => Navigator.of(context).pop(false),
+                                  child: const Text("CANCELAR"),
+                                ),
+                                TextButton(
+                                  style: TextButton.styleFrom(
+                                    foregroundColor: Colors.red,
                                   ),
-                                  TextButton(
-                                      style: TextButton.styleFrom(
-                                        foregroundColor: Colors.red,
-                                      ),
-                                      onPressed: () async {
-                                        Navigator.of(context).pop(true);
-                                        await RevisionServices().deleteRevisionTarea(context, orden, revisionTareasList[i], token);
-                                      },
-                                      child: const Text("BORRAR")),
-                                ],
-                              );
-                            });
+                                  onPressed: () async {
+                                    Navigator.of(context).pop(true);
+                                    await RevisionServices().deleteRevisionTarea(context, orden, revisionTareasList[i], token);
+                                  },
+                                  child: const Text("BORRAR")
+                                ),
+                              ],
+                            );
+                          }
+                        );
                       },
                       onDismissed: (direction) async {
                         setState(() {

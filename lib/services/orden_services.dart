@@ -83,8 +83,7 @@ class OrdenServices {
     }
   }
 
-  Future patchOrden(BuildContext context, Orden orden, String estado,
-      int ubicacionId, String token) async {
+  Future patchOrden(BuildContext context, Orden orden, String estado, int ubicacionId, String token) async {
     String link = apiLink;
     link += 'api/v1/ordenes/${orden.ordenTrabajoId}';
 
@@ -100,11 +99,9 @@ class OrdenServices {
 
       if (resp.statusCode == 200) {
         orden.estado = estado;
-        await showDialogs(
-            context, 'Estado cambiado correctamente', false, false);
+        await showDialogs(context, 'Estado cambiado correctamente', false, false);
       } else {
-        _mostrarError(
-            context, 'Hubo un error al momento de cambiar el servicio');
+        _mostrarError(context, 'Hubo un error al momento de cambiar el estado');
       }
 
       return;

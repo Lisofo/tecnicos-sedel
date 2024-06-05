@@ -79,10 +79,7 @@ class PtosInspeccionServices {
         ),
       );
       final List tipoPtoInspeccionList = resp.data;
-      var retorno = tipoPtoInspeccionList
-          .map((e) => TipoPtosInspeccion.fromJson(e))
-          .toList();
-
+      var retorno = tipoPtoInspeccionList.map((e) => TipoPtosInspeccion.fromJson(e)).toList();
       return retorno;
     } catch (e) {
       print(e);
