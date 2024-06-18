@@ -83,7 +83,7 @@ class MaterialesServices {
 
   Future getMaterialesXTPI(TipoPtosInspeccion tPI, String token) async {
     String link =
-        '${apiUrl}api/v1/tipos/puntos/${tPI.tipoPuntoInspeccionId}/materiales';
+        '${apiUrl}api/v1/tipos/puntos/${tPI.tipoPuntoInspeccionId}/materiales?sort=descripcion';
 
     try {
       var headers = {'Authorization': token};

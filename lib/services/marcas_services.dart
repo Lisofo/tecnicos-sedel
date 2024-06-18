@@ -31,7 +31,7 @@ class MarcasServices {
                   Navigator.of(context).pop();
                 }
               },
-              child: const Text('Cerrar'),
+              child: const Text('OK'),
             ),
           ],
         );
@@ -51,7 +51,7 @@ class MarcasServices {
             onPressed: () {
               Navigator.of(context).pop();
             },
-            child: const Text('Cerrar'),
+            child: const Text('OK'),
           ),
         ],
       ),
@@ -70,8 +70,7 @@ class MarcasServices {
 
       if (resp.statusCode == 201) {
         Provider.of<OrdenProvider>(context, listen: false).setMarca(marca.marcaId);
-        showDialogs(context, 'Acaba de marcar entrada, que tenga buena jornada',
-            false, false);
+        showDialogs(context, 'Acaba de marcar entrada, que tenga buena jornada', false, false);
       } else {
         showErrorDialog(context, 'Hubo un error al momento de marcar entrada');
       }

@@ -140,7 +140,7 @@ class _MaterialesPageState extends State<MaterialesPage> {
                   },
                 ),
                 const SizedBox(height: 16),
-                const Text('Área de Cobertura:'),
+                const Text('Área de Cobertura (m²-m³):'),
                 TextField(
                   onChanged: (value) {
                     areaCobertura = value;
@@ -612,7 +612,7 @@ class _MaterialesPageState extends State<MaterialesPage> {
                   controller: ubicacionController,
                 ),
                 const SizedBox(height: 16),
-                const Text('Área de Cobertura:'),
+                const Text('Área de Cobertura (m²-m³):'),
                 TextFormField(
                   controller: areaController,
                 )

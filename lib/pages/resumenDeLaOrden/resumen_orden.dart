@@ -122,7 +122,7 @@ class _ResumenOrdenState extends State<ResumenOrden> {
                   const ContainerTituloPIRevision(titulo: 'Tareas'),
                   const SizedBox(height: 10,),
                   Text(
-                    tareas.isEmpty ? 'No registro tareas' : 'OK', 
+                    tareas.isEmpty ? 'No registró tareas' : 'OK', 
                     style: const TextStyle(
                       fontSize: 18
                     ),
@@ -132,7 +132,7 @@ class _ResumenOrdenState extends State<ResumenOrden> {
                   const ContainerTituloPIRevision(titulo: 'Plagas'),
                   const SizedBox(height: 10,),
                   Text(
-                    plagas.isEmpty ? 'No registro plagas' : 'OK', 
+                    plagas.isEmpty ? 'No registró plagas' : 'OK', 
                     style: const TextStyle(
                       fontSize: 18
                     ),
@@ -141,7 +141,7 @@ class _ResumenOrdenState extends State<ResumenOrden> {
                   const ContainerTituloPIRevision(titulo: 'Materiales'),
                   const SizedBox(height: 10,),
                   Text(
-                    materiales.isEmpty ? 'No registro materiales' : 'OK', 
+                    materiales.isEmpty ? 'No registró materiales' : 'OK', 
                     style: const TextStyle(
                       fontSize: 18
                     ),
@@ -151,7 +151,7 @@ class _ResumenOrdenState extends State<ResumenOrden> {
                 const ContainerTituloPIRevision(titulo: 'Observaciones'),
                 const SizedBox(height: 10,),
                 Text(
-                  observaciones.isEmpty ? 'No registro observación' : 'OK', 
+                  observaciones.isEmpty ? 'No registró observación' : 'OK', 
                   style: const TextStyle(
                     fontSize: 18
                   ),
@@ -160,7 +160,7 @@ class _ResumenOrdenState extends State<ResumenOrden> {
                 const ContainerTituloPIRevision(titulo: 'Firmas'),
                 const SizedBox(height: 10,),
                 Text(
-                  (firmas.isEmpty && firmaDisponible != 'N') ? 'No registro firmas' : firmaDisponible == 'N' ? 'Cliente no disponible' : 'OK', 
+                  (firmas.isEmpty && firmaDisponible != 'N') ? 'No registró firmas' : firmaDisponible == 'N' ? 'Cliente no disponible' : 'OK', 
                   style: const TextStyle(
                     fontSize: 18
                   ),

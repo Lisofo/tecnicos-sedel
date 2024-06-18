@@ -93,6 +93,11 @@ class _ObservacionesPageState extends State<ObservacionesPage> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
+                  const Text(
+                    'Para el cliente:',
+                    textAlign: TextAlign.start,
+                    style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                  ),
                   Container(
                     decoration: BoxDecoration(
                       border: Border.all(color: colors.primary, width: 2),
