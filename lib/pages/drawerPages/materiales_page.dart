@@ -597,10 +597,10 @@ class _MaterialesPageState extends State<MaterialesPage> {
                   items: plagas,
                   selectedItems: material.plagas,
                   itemAsString: (Plaga p) => p.descripcion,
+                  compareFn: (Plaga p1, Plaga p2) => p1.plagaId == p2.plagaId,
                   popupProps: const PopupPropsMultiSelection.menu(
-                    showSelectedItems: false,
                     
-                    // disabledItemFn: (String s) => s.startsWith('I'),
+                    showSelectedItems: true,
                   ),
                   onChanged: (value) {
                     plagasSeleccionadas = (value);
