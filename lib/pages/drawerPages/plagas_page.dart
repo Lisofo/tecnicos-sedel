@@ -68,7 +68,9 @@ class _PlagasPageState extends State<PlagasPage> {
     plagas = await PlagaServices().getPlagas(token);
     orden = context.read<OrdenProvider>().orden;
     marcaId = context.read<OrdenProvider>().marcaId;
-    revisionPlagasList = await RevisionServices().getRevisionPlagas(orden, token);
+    if(orden.otRevisionId != 0) {
+      revisionPlagasList = await RevisionServices().getRevisionPlagas(orden, token);
+    }
     setState(() {});
   }
 

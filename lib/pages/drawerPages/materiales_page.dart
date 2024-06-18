@@ -11,7 +11,6 @@ import 'package:app_tec_sedel/services/materiales_services.dart';
 import 'package:app_tec_sedel/services/plagas_services.dart';
 import 'package:dio/dio.dart';
 import 'package:dropdown_search/dropdown_search.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -55,7 +54,9 @@ class _MaterialesPageState extends State<MaterialesPage> {
     orden = context.read<OrdenProvider>().orden;
     marcaId = context.read<OrdenProvider>().marcaId;
     materiales = await MaterialesServices().getMateriales(token);
-    revisionMaterialesList = await MaterialesServices().getRevisionMateriales(orden, token);
+    if(orden.otRevisionId != 0) {
+      revisionMaterialesList = await MaterialesServices().getRevisionMateriales(orden, token);
+    }
     setState(() {});
   }
 
@@ -119,16 +120,14 @@ class _MaterialesPageState extends State<MaterialesPage> {
                     });
                   },
                 ),
-                const SizedBox(
-                  height: 16,
-                ),
+                const SizedBox(height: 16,),
                 const Text('* Plagas:'),
                 DropdownSearch<Plaga>.multiSelection(
                   items: plagas,
                   popupProps: const PopupPropsMultiSelection.menu(
-                      // showSelectedItems: true,
-                      // disabledItemFn: (String s) => s.startsWith('I'),
-                      ),
+                    // showSelectedItems: true,
+                    // disabledItemFn: (String s) => s.startsWith('I'),
+                  ),
                   onChanged: (value) {
                     plagasSeleccionadas = (value);
                   },
@@ -159,7 +158,16 @@ class _MaterialesPageState extends State<MaterialesPage> {
               TextButton(
                 child: const Text('Guardar'),
                 onPressed: () async {
-                  if(cantidad != '' && ubicacion != '' && plagasSeleccionadas.isNotEmpty && (lotes.isNotEmpty && selectedLote!.materialLoteId != 0) && (metodosAplicacion.isNotEmpty && selectedMetodo!.metodoAplicacionId != 0)){
+                  bool noTieneLotes = false;
+                  bool tieneLoteId = false;
+                  if(lotes.isEmpty){
+                    noTieneLotes = true;
+                  } else{
+                    if(selectedLote!.materialLoteId != 0){
+                      tieneLoteId = true;
+                    }
+                  }
+                  if(cantidad != '' && ubicacion != '' && plagasSeleccionadas.isNotEmpty && (noTieneLotes || tieneLoteId) && (metodosAplicacion.isNotEmpty && selectedMetodo!.metodoAplicacionId != 0)){
                     late List<int> plagasIds = [];
                     final RevisionMaterial nuevaRevisionMaterial =
                       RevisionMaterial(
@@ -172,7 +180,7 @@ class _MaterialesPageState extends State<MaterialesPage> {
                         areaCobertura: areaCobertura,
                         plagas: plagasSeleccionadas,//
                         material: material,
-                        lote: selectedLote!,//
+                        lote: selectedLote,//
                         metodoAplicacion: selectedMetodo!//
                       );
                     for (var i = 0; i < plagasSeleccionadas.length; i++) {
@@ -227,13 +235,23 @@ class _MaterialesPageState extends State<MaterialesPage> {
             children: [
               Container(
                 decoration: BoxDecoration(
-                    border: Border.all(
-                        width: 2,
-                        color: colors.primary),
-                    borderRadius: BorderRadius.circular(5)),
-                child: DropdownButton<Materiales>(
-                  hint: const Text("Selecciona un material"),
-                  value: materialInicial,
+                  border: Border.all(
+                    width: 2,
+                    color: colors.primary
+                  ),
+                  borderRadius: BorderRadius.circular(5)
+                ),
+                child: DropdownSearch(
+                  dropdownDecoratorProps: const DropDownDecoratorProps(
+                    textAlignVertical: TextAlignVertical.center,
+                    dropdownSearchDecoration: InputDecoration(
+                      hintText: 'Seleccione un material'
+                    )
+                  ),
+                  items: materiales,
+                  popupProps: const PopupProps.menu(
+                    showSearchBox: true, searchDelay: Duration.zero
+                  ),
                   onChanged: (newValue) async {
                     if(marcaId == 0 || (orden.estado == 'PENDIENTE' || orden.estado == 'FINALIZADA')){
                       ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
@@ -246,20 +264,9 @@ class _MaterialesPageState extends State<MaterialesPage> {
                       _showMaterialDetails(context, selectedMaterial);
                     });
                   },
-                  items: materiales.map((material) {
-                    return DropdownMenuItem(
-                      value: material,
-                      child: Text(material.descripcion),
-                    );
-                  }).toList(),
-                  iconSize: 24,
-                  elevation: 16,
-                  isExpanded: true,
-                ),
+                )
               ),
-              const SizedBox(
-                height: 20,
-              ),
+              const SizedBox(height: 20,),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -306,24 +313,22 @@ class _MaterialesPageState extends State<MaterialesPage> {
                                   return AlertDialog(
                                     surfaceTintColor: Colors.white,
                                     title: const Text("Confirmar"),
-                                    content: const Text(
-                                        "¿Estas seguro de querer borrar el material?"),
+                                    content: const Text("¿Estas seguro de querer borrar el material?"),
                                     actions: <Widget>[
                                       TextButton(
-                                        onPressed: () =>
-                                            Navigator.of(context)
-                                                .pop(false),
+                                        onPressed: () => Navigator.of(context).pop(false),
                                         child: const Text("CANCELAR"),
                                       ),
                                       TextButton(
-                                          style: TextButton.styleFrom(
-                                            foregroundColor: Colors.red,
-                                          ),
-                                          onPressed: () async {
-                                            Navigator.of(context).pop(true);
-                                            await MaterialesServices().deleteRevisionMaterial(context,orden,revisionMaterialesList[i],token);
-                                          },
-                                          child: const Text("BORRAR")),
+                                        style: TextButton.styleFrom(
+                                          foregroundColor: Colors.red,
+                                        ),
+                                        onPressed: () async {
+                                          Navigator.of(context).pop(true);
+                                          await MaterialesServices().deleteRevisionMaterial(context, orden, revisionMaterialesList[i], token);
+                                        },
+                                        child: const Text("BORRAR")
+                                      ),
                                     ],
                                   );
                                 },
@@ -339,8 +344,7 @@ class _MaterialesPageState extends State<MaterialesPage> {
                             },
                             background: Container(
                               color: Colors.red,
-                              padding: const EdgeInsets.symmetric(
-                                  horizontal: 20),
+                              padding: const EdgeInsets.symmetric(horizontal: 20),
                               alignment: AlignmentDirectional.centerEnd,
                               child: const Icon(
                                 Icons.delete,
@@ -350,44 +354,34 @@ class _MaterialesPageState extends State<MaterialesPage> {
                             child: Card(
                               surfaceTintColor: Colors.white,
                               child: ListTile(
-                                trailing: IconButton(
-                                  onPressed: () async {
-                                    if(marcaId == 0 || (orden.estado == 'PENDIENTE' || orden.estado == 'FINALIZADA')){
-                                      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-                                        content: Text('No puede de ingresar o editar datos.'),
-                                      ));
-                                      return Future.value(false);
-                                    }
-                                    showDialog(
-                                      context: context,
-                                      builder: (BuildContext context) {
-                                        return AlertDialog(
-                                          surfaceTintColor: Colors.white,
-                                          title: const Text("Confirmar"),
-                                          content: const Text("¿Estas seguro de querer borrar el material?"),
-                                          actions: <Widget>[
-                                            TextButton(
-                                              onPressed: () => Navigator.of(context).pop(false),
-                                              child: const Text("CANCELAR"),
-                                            ),
-                                            TextButton(
-                                              style: TextButton.styleFrom(
-                                                foregroundColor: Colors.red,
-                                              ),
-                                              onPressed: () async {
-                                                await MaterialesServices().deleteRevisionMaterial(context,orden,revisionMaterialesList[i],token);
-                                                setState(() {
-                                                  revisionMaterialesList.removeAt(i);
-                                                });
-                                              },
-                                              child: const Text("BORRAR")
-                                            ),
-                                          ],
-                                        );
-                                      }
-                                    );
-                                  },
-                                  icon: const Icon(Icons.delete)
+                                trailing: Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    IconButton(
+                                      onPressed: () async {
+                                        if(marcaId == 0 || (orden.estado == 'PENDIENTE' || orden.estado == 'FINALIZADA')){
+                                          ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+                                            content: Text('No puede de ingresar o editar datos.'),
+                                          ));
+                                          return Future.value(false);
+                                        }
+                                        await editMaterial(context, item);
+                                      }, 
+                                      icon: const Icon(Icons.edit)
+                                    ),
+                                    IconButton(
+                                      onPressed: () async {
+                                        if(marcaId == 0 || (orden.estado == 'PENDIENTE' || orden.estado == 'FINALIZADA')){
+                                          ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+                                            content: Text('No puede de ingresar o editar datos.'),
+                                          ));
+                                          return Future.value(false);
+                                        }
+                                        deleteMaterial(context, i);
+                                      },
+                                      icon: const Icon(Icons.delete)
+                                    ),
+                                  ],
                                 ),
                                 title: Column(
                                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -409,8 +403,7 @@ class _MaterialesPageState extends State<MaterialesPage> {
                             ),
                           );
                         },
-                        separatorBuilder:
-                            (BuildContext context, int index) {
+                        separatorBuilder: (BuildContext context, int index) {
                           return const Divider(
                             thickness: 2,
                             color: Colors.green,
@@ -425,6 +418,37 @@ class _MaterialesPageState extends State<MaterialesPage> {
           ),
         ),
       ),
+    );
+  }
+
+  void deleteMaterial(BuildContext context, int i) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          surfaceTintColor: Colors.white,
+          title: const Text("Confirmar"),
+          content: const Text("¿Estas seguro de querer borrar el material?"),
+          actions: <Widget>[
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(false),
+              child: const Text("CANCELAR"),
+            ),
+            TextButton(
+              style: TextButton.styleFrom(
+                foregroundColor: Colors.red,
+              ),
+              onPressed: () async {
+                await MaterialesServices().deleteRevisionMaterial(context,orden,revisionMaterialesList[i],token);
+                setState(() {
+                  revisionMaterialesList.removeAt(i);
+                });
+              },
+              child: const Text("BORRAR")
+            ),
+          ],
+        );
+      }
     );
   }
 
@@ -493,5 +517,176 @@ class _MaterialesPageState extends State<MaterialesPage> {
       // Manejar errores de solicitud
       print('Error al realizar la solicitud: $e');
     }
+  }
+
+  editMaterial(BuildContext context, RevisionMaterial material) async {
+    final TextEditingController ubicacionController = TextEditingController();
+    final TextEditingController areaController = TextEditingController();
+    final TextEditingController cantidadController = TextEditingController();
+    if(material.otMaterialId != 0){
+      selectedLote = material.lote;
+      selectedMetodo = material.metodoAplicacion;
+      ubicacionController.text = material.ubicacion;
+      areaController.text = material.areaCobertura;
+      cantidadController.text = material.cantidad.toString();
+      plagasSeleccionadas = material.plagas;
+    } else {
+      selectedLote = Lote.empty();
+      selectedMetodo = MetodoAplicacion.empty();
+    }
+    plagas = await PlagaServices().getPlagas(token);
+    lotes = await MaterialesServices().getLotes(material.material.materialId, token);
+    metodosAplicacion = await MaterialesServices().getMetodosAplicacion(token);
+
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return SingleChildScrollView(
+          child: AlertDialog(
+            surfaceTintColor: Colors.white,
+            content: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  'Nombre: ${material.material.descripcion}',
+                  style: const TextStyle(fontSize: 20),
+                ),
+                Text(
+                  'Unidad: ${material.material.unidad}',
+                  style: const TextStyle(fontSize: 16),
+                ),
+                const SizedBox(height: 16),
+                TextButton(
+                  onPressed: (){
+                    verManual(context, null, material.material);
+                  }, 
+                  child: const Text('Ver Manuales', style: TextStyle(fontSize: 16, decoration: TextDecoration.underline),)
+                ),
+                const SizedBox(height: 16),
+                const Text('* Cantidad:'),
+                TextFormField(
+                  controller: cantidadController,
+                  keyboardType: TextInputType.number,
+                ),
+                const SizedBox(height: 16),
+                Text(lotes.isEmpty ? 'Lote:' : '* Lote:'),
+                DropdownSearch(
+                  items: lotes,
+                  selectedItem: selectedLote,
+                  onChanged: (newValue) {
+                    setState(() {
+                      selectedLote = newValue;
+                    });
+                  },
+                ),
+                const SizedBox(height: 16),
+                const Text('* Método de Aplicación:'),
+                DropdownSearch(
+                  items: metodosAplicacion,
+                  selectedItem: selectedMetodo,
+                  onChanged: (newValue) {
+                    setState(() {
+                      selectedMetodo = newValue;
+                    });
+                  },
+                ),
+                const SizedBox(height: 16,),
+                const Text('* Plagas:'),
+                DropdownSearch<Plaga>.multiSelection(
+                  items: plagas,
+                  selectedItems: material.plagas,
+                  itemAsString: (Plaga p) => p.descripcion,
+                  popupProps: const PopupPropsMultiSelection.menu(
+                    showSelectedItems: false,
+                    
+                    // disabledItemFn: (String s) => s.startsWith('I'),
+                  ),
+                  onChanged: (value) {
+                    plagasSeleccionadas = (value);
+                  },
+                ),
+                const SizedBox(height: 16),
+                const Text('* Ubicación:'),
+                TextFormField(
+                  controller: ubicacionController,
+                ),
+                const SizedBox(height: 16),
+                const Text('Área de Cobertura:'),
+                TextFormField(
+                  controller: areaController,
+                )
+              ],
+            ),
+            actions: <Widget>[
+              TextButton(
+                child: const Text('Cancelar'),
+                onPressed: () {
+                  Navigator.of(context).pop();
+                },
+              ),
+              TextButton(
+                child: const Text('Guardar'),
+                onPressed: () async {
+                  ubicacion = ubicacionController.text;
+                  areaCobertura = areaController.text;
+                  cantidad = cantidadController.text;
+                  bool noTieneLotes = false;
+                  bool tieneLoteId = false;
+                  if(lotes.isEmpty){
+                    noTieneLotes = true;
+                  } else{
+                    if(selectedLote!.materialLoteId != 0){
+                      tieneLoteId = true;
+                    }
+                  }
+                  if(cantidad != '' && ubicacion != '' && plagasSeleccionadas.isNotEmpty && (noTieneLotes || tieneLoteId) && (metodosAplicacion.isNotEmpty && selectedMetodo!.metodoAplicacionId != 0)){
+                    late List<int> plagasIds = [];
+                    final RevisionMaterial nuevaRevisionMaterial =
+                      RevisionMaterial(
+                        otMaterialId: material.otMaterialId,
+                        ordenTrabajoId: orden.ordenTrabajoId,
+                        otRevisionId: orden.otRevisionId,
+                        cantidad: esNumerico(cantidad) ? double.parse(cantidad) : double.parse("0.0"),//
+                        comentario: '',
+                        ubicacion: ubicacion,//
+                        areaCobertura: areaCobertura,
+                        plagas: plagasSeleccionadas,//
+                        material: material.material,
+                        lote: selectedLote,//
+                        metodoAplicacion: selectedMetodo!//
+                      );
+                    for (var i = 0; i < plagasSeleccionadas.length; i++) {
+                      plagasIds.add(plagasSeleccionadas[i].plagaId);
+                    }
+                    await MaterialesServices().putRevisionMaterial(context, orden, plagasIds, nuevaRevisionMaterial, token);
+                    selectedLote = Lote.empty();
+                    selectedMetodo = MetodoAplicacion.empty();
+                    ubicacionController.text = '';
+                    areaController.text = '';
+                    cantidadController.text = '';
+                    revisionMaterialesList = await MaterialesServices().getRevisionMateriales(orden, token);
+                    setState(() {});
+                  } else {
+                    showDialog(
+                      context: context, 
+                      builder: (BuildContext context){
+                        return AlertDialog(
+                          title: const Text('Error'),
+                          content: const Text('Faltan campos por completar'),
+                          actions: [
+                            TextButton(onPressed: ()=> router.pop(), child: const Text('Cerrar'))
+                          ],
+                        );
+                      }
+                    );
+                  }
+                },
+              ),
+            ],
+          ),
+        );
+      },
+    );
   }
 }

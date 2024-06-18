@@ -11,10 +11,10 @@ import 'package:flutter/material.dart';
 class PlagaServices {
   final _dio = Dio();
   String apiUrl = Config.APIURL;
-  late String apiLink = '${apiUrl}api/v1/plagas/';
+  late String apiLink = '${apiUrl}api/v1/plagas';
 
   Future getPlagas(String token) async {
-    String link = apiLink;
+    String link = "$apiLink?sort=descripcion";
 
     try {
       var headers = {'Authorization': token};
@@ -34,8 +34,7 @@ class PlagaServices {
   }
 
   Future getPlagasXTPI(TipoPtosInspeccion tPI, String token) async {
-    String link =
-        '${apiUrl}api/v1/tipos/puntos/${tPI.tipoPuntoInspeccionId}/plagas';
+    String link = '${apiUrl}api/v1/tipos/puntos/${tPI.tipoPuntoInspeccionId}/plagas';
 
     try {
       var headers = {'Authorization': token};

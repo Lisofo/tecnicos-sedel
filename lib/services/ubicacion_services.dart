@@ -37,7 +37,7 @@ class UbicacionServices {
     );
   }
 
-  Future<void> _mostrarError(BuildContext context, String mensaje) async {
+  Future<void> showErrorDialog(BuildContext context, String mensaje) async {
     showDialog(
       context: context,
       builder: (_) => AlertDialog(
@@ -69,7 +69,7 @@ class UbicacionServices {
 
       if (resp.statusCode == 201) {
       } else {
-        _mostrarError(context, 'Hubo un error al momento de marcar entrada');
+        showErrorDialog(context, 'Hubo un error al momento de marcar entrada');
       }
 
       return;
@@ -78,18 +78,20 @@ class UbicacionServices {
         if (e.response != null) {
           final responseData = e.response!.data;
           if (responseData != null) {
-            final errors = responseData['errors'] as List<dynamic>;
-            final errorMessages = errors.map((error) {
-              return "Error: ${error['message']}";
-            }).toList();
-            await _mostrarError(context, errorMessages.join('\n'));
+            if(e.response!.statusCode == 403){
+              showErrorDialog(context, 'Error: ${e.response!.data['message']}');
+            }else{
+              final errors = responseData['errors'] as List<dynamic>;
+              final errorMessages = errors.map((error) {
+                return "Error: ${error['message']}";
+              }).toList();
+              showErrorDialog(context, errorMessages.join('\n'));
+            }
           } else {
-            await _mostrarError(context, 'Error: ${e.response!.data}');
+            showErrorDialog(context, 'Error: ${e.response!.data}');
           }
-        } else {
-          await _mostrarError(context, 'Error: ${e.message}');
-        }
-      }
+        } 
+      } 
     }
   }
 }

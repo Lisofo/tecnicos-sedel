@@ -95,9 +95,7 @@ class ControlServices{
           } else {
             showErrorDialog(context, 'Error: ${e.response!.data}');
           }
-        } else {
-          showErrorDialog(context, 'Error: ${e.message}');
-        }
+        } 
       } 
     }
   }
@@ -132,9 +130,7 @@ class ControlServices{
           } else {
             showErrorDialog(context, 'Error: ${e.response!.data}');
           }
-        } else {
-          showErrorDialog(context, 'Error: ${e.message}');
-        }
+        } 
       } 
     }
   }
@@ -172,9 +168,7 @@ class ControlServices{
           } else {
             showErrorDialog(context, 'Error: ${e.response!.data}');
           }
-        } else {
-          showErrorDialog(context, 'Error: ${e.message}');
-        }
+        } 
       } 
     }
   }
@@ -207,9 +201,7 @@ class ControlServices{
           } else {
             showErrorDialog(context, 'Error: ${e.response!.data}');
           }
-        } else {
-          showErrorDialog(context, 'Error: ${e.message}');
-        }
+        } 
       } 
     }
   }

@@ -30,6 +30,8 @@ class _EntradSalidaState extends State<EntradSalida> {
   late String nombreUsuario = '';
   bool ejecutandoEntrada = false;
   bool ejecutandoSalida = false;
+  late int tecnicoId = 0;
+  late String token = '';
 
   @override
   void initState() {
@@ -39,7 +41,8 @@ class _EntradSalidaState extends State<EntradSalida> {
 
   cargarDatos() async {
     nombreUsuario = context.read<OrdenProvider>().nombreUsuario;
-
+    tecnicoId = context.read<OrdenProvider>().tecnicoId;
+    token = context.read<OrdenProvider>().token;
     await obtenerObjeto();
   }
 
@@ -172,9 +175,6 @@ class _EntradSalidaState extends State<EntradSalida> {
     ubicacion.fecha = DateTime.now();
     ubicacion.usuarioId = uId;
     ubicacion.ubicacion = _currentPosition;
-
-    String token = context.read<OrdenProvider>().token;
-
     await UbicacionServices().postUbicacion(context, ubicacion, token);
   }
 
@@ -184,18 +184,18 @@ class _EntradSalidaState extends State<EntradSalida> {
       if (marca.marcaId == 0) {
         await obtenerUbicacion();
         int ubicacionId = ubicacion.ubicacionId;
-        marca = Marca.empty();
-        marca.tecnicoId = context.read<OrdenProvider>().tecnicoId;
-        marca.desde = DateTime.now();
-        marca.ubicacionId = ubicacionId;
-        String token = context.read<OrdenProvider>().token;
-
-        await MarcasServices().postMarca(context, marca, token);
-        guardarObjeto(marca);
+        if(ubicacionId != 0){
+          marca = Marca.empty();
+          marca.tecnicoId = tecnicoId;
+          marca.desde = DateTime.now();
+          marca.ubicacionId = ubicacionId;
+          await MarcasServices().postMarca(context, marca, token);
+          guardarObjeto(marca);
+        }
+        
         setState(() {});
       } else {
-        MarcasServices.showDialogs(
-            context, 'Ya tiene una entrada inciada', false, false);
+        MarcasServices.showDialogs(context, 'Ya tiene una entrada inciada', false, false);
       }
       print('hola entrada');
       ejecutandoEntrada = false;
@@ -204,7 +204,6 @@ class _EntradSalidaState extends State<EntradSalida> {
 
   marcarSalida() async {
     List<Orden> ordenesEnProceso = context.read<OrdenProvider>().ordenesEnProceso;
-
     if (!ejecutandoSalida) {
       ejecutandoSalida = true;
       if (marca.marcaId != 0) {
@@ -238,34 +237,32 @@ class _EntradSalidaState extends State<EntradSalida> {
           int ubicacionId = ubicacion.ubicacionId;
           marca.hasta = DateTime.now();
           marca.ubicacionIdHasta = ubicacionId;
-          String token = context.read<OrdenProvider>().token;
-
           await MarcasServices().putMarca(context, marca, token);
           Provider.of<OrdenProvider>(context, listen: false).setMarca(0);
           _borrarIdLocal();
           setState(() {});
         } else {
           showDialog(
-              context: context,
-              builder: (context) {
-                return AlertDialog(
-                  surfaceTintColor: Colors.white,
-                  title: const Text('Advertencia'),
-                  content: const Text(
-                      'Revise las ordenes que le quedaron en proceso'),
-                  actions: [
-                    TextButton(
-                        onPressed: () {
-                          Navigator.of(context).pop();
-                        },
-                        child: const Text('Cerrar'))
-                  ],
-                );
-              });
+            context: context,
+            builder: (context) {
+              return AlertDialog(
+                surfaceTintColor: Colors.white,
+                title: const Text('Advertencia'),
+                content: const Text('Revise las ordenes que le quedaron en proceso'),
+                actions: [
+                  TextButton(
+                    onPressed: () {
+                      Navigator.of(context).pop();
+                    },
+                    child: const Text('Cerrar')
+                  )
+                ],
+              );
+            }
+          );
         }
       } else {
-        MarcasServices.showDialogs(
-            context, 'Marque entrada para luego marcar salida', false, false);
+        MarcasServices.showDialogs(context, 'Marque entrada para luego marcar salida', false, false);
       }
       print('chau salida');
       ejecutandoSalida = false;
@@ -275,7 +272,8 @@ class _EntradSalidaState extends State<EntradSalida> {
   Future<void> getLocation() async {
     try {
       Position position = await Geolocator.getCurrentPosition(
-          desiredAccuracy: LocationAccuracy.high);
+        desiredAccuracy: LocationAccuracy.high
+      );
       setState(() {
         _currentPosition = '${position.latitude}, ${position.longitude}';
         print('${position.latitude}, ${position.longitude}');
@@ -303,15 +301,16 @@ class _EntradSalidaState extends State<EntradSalida> {
   }
 
   Future obtenerObjeto() async {
-    final prefs = await SharedPreferences.getInstance();
-    final jsonString = prefs.getString('marcaConDatos');
-    if (jsonString != null) {
-      print(jsonString);
-      final map = jsonDecode(jsonString);
-      marca = Marca.fromJson(map);
-      Provider.of<OrdenProvider>(context, listen: false).setMarca(marca.marcaId);
-      setState(() {});
-    }
+    marca = await MarcasServices().getUltimaMarca(context, tecnicoId, token);
+    // final prefs = await SharedPreferences.getInstance();
+    // final jsonString = prefs.getString('marcaConDatos');
+    // if (jsonString != null) {
+    //   print(jsonString);
+    //   final map = jsonDecode(jsonString);
+    //   marca = Marca.fromJson(map);
+    // }
+    Provider.of<OrdenProvider>(context, listen: false).setMarca(marca.marcaId);
+    setState(() {});
     return;
   }
 }

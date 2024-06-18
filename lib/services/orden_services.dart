@@ -2,12 +2,15 @@
 
 import 'package:app_tec_sedel/config/config.dart';
 import 'package:app_tec_sedel/models/orden.dart';
+import 'package:app_tec_sedel/providers/orden_provider.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
 class OrdenServices {
   final _dio = Dio();
   String apiLink = Config.APIURL;
+  int statusCode = 0;
 
   static Future<void> showDialogs(BuildContext context, String errorMessage,
       bool doblePop, bool triplePop) async {
@@ -37,7 +40,7 @@ class OrdenServices {
     );
   }
 
-  Future<void> _mostrarError(BuildContext context, String mensaje) async {
+  Future<void> showErrorDialog(BuildContext context, String mensaje) async {
     showDialog(
       context: context,
       builder: (_) => AlertDialog(
@@ -56,8 +59,7 @@ class OrdenServices {
     );
   }
 
-  Future getOrden(
-      String tecnicoId, String desde, String hasta, String token) async {
+  Future getOrden(BuildContext context, String tecnicoId, String desde, String hasta, String token) async {
     String link = apiLink;
     String linkFiltrado = link += desde == 'Anteriores'
         ? 'api/v1/ordenes/?sort=fechaDesde&tecnicoId=$tecnicoId&estado=EN PROCESO'
@@ -77,10 +79,30 @@ class OrdenServices {
       var retorno = ordenList.map((obj) => Orden.fromJson(obj)).toList();
       print(retorno.length);
       return retorno;
-    } on DioException catch (e) {
-      print(e.error);
-      print(e.response);
+    } catch (e) {
+      if (e is DioException) {
+        if (e.response != null) {
+          final responseData = e.response!.data;
+          if (responseData != null) {
+            if(e.response!.statusCode == 403){
+              showErrorDialog(context, 'Error: ${e.response!.data['message']}');
+            }else{
+              final errors = responseData['errors'] as List<dynamic>;
+              final errorMessages = errors.map((error) {
+                return "Error: ${error['message']}";
+              }).toList();
+              showErrorDialog(context, errorMessages.join('\n'));
+            }
+          } else {
+            showErrorDialog(context, 'Error: ${e.response!.data}');
+          }
+        } 
+      } 
     }
+  }
+
+  Future<int?> getStatusCode() async {
+    return statusCode;
   }
 
   Future patchOrden(BuildContext context, Orden orden, String estado, int ubicacionId, String token) async {
@@ -96,12 +118,14 @@ class OrdenServices {
             headers: headers,
           ),
           data: data);
-
+        
+      statusCode = resp.statusCode!;
       if (resp.statusCode == 200) {
         orden.estado = estado;
-        await showDialogs(context, 'Estado cambiado correctamente', false, false);
+        Provider.of<OrdenProvider>(context, listen: false).cambiarEstadoOrden(estado);
+        
       } else {
-        _mostrarError(context, 'Hubo un error al momento de cambiar el estado');
+        showErrorDialog(context, 'Hubo un error al momento de cambiar el estado');
       }
 
       return;
@@ -110,18 +134,20 @@ class OrdenServices {
         if (e.response != null) {
           final responseData = e.response!.data;
           if (responseData != null) {
-            final errors = responseData['errors'] as List<dynamic>;
-            final errorMessages = errors.map((error) {
+            if(e.response!.statusCode == 403){
+              showErrorDialog(context, 'Error: ${e.response!.data['message']}');
+            }else{
+              final errors = responseData['errors'] as List<dynamic>;
+              final errorMessages = errors.map((error) {
               return "Error: ${error['message']}";
             }).toList();
-            await _mostrarError(context, errorMessages.join('\n'));
-          } else {
-            await _mostrarError(context, 'Error: ${e.response!.data}');
+            showErrorDialog(context, errorMessages.join('\n'));
           }
-        } else {
-          await _mostrarError(context, 'Error: ${e.message}');
-        }
-      }
+          } else {
+            showErrorDialog(context, 'Error: ${e.response!.data}');
+          }
+        } 
+      } 
     }
   }
 }

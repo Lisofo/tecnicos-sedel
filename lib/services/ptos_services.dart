@@ -99,9 +99,7 @@ class PtosInspeccionServices {
         ),
       );
       final List ptoInspeccionList = resp.data;
-      var retorno = ptoInspeccionList
-          .map((e) => RevisionPtoInspeccion.fromJson(e))
-          .toList();
+      var retorno = ptoInspeccionList.map((e) => RevisionPtoInspeccion.fromJson(e)).toList();
 
       Provider.of<OrdenProvider>(context, listen: false).setPI(retorno);
 
@@ -273,8 +271,7 @@ class PtosInspeccionServices {
           ),
           data: data);
       if (resp.statusCode == 200) {
-        revisionPtoInspeccion.otPuntoInspeccionId =
-            resp.data["otPuntoInspeccionId"];
+        revisionPtoInspeccion.otPuntoInspeccionId = resp.data["otPuntoInspeccionId"];
       }
       return;
     } catch (e) {
@@ -345,8 +342,7 @@ class PtosInspeccionServices {
         ),
       );
 
-      final RevisionPtoInspeccion ptoInspeccion =
-          RevisionPtoInspeccion.fromJson(resp.data);
+      final RevisionPtoInspeccion ptoInspeccion = RevisionPtoInspeccion.fromJson(resp.data);
       return ptoInspeccion;
     } catch (e) {
       if (e is DioException) {
@@ -467,11 +463,16 @@ class PtosInspeccionServices {
         ),
         data: datosJson
       );
-      print(resp);
+      // print(resp);
+      // print(resp.data[0]["status"]);
+      // print(resp.data[0]["content"]["otPuntoInspeccionId"]);
       if (resp.statusCode == 201) {
         for(int i = 0; i < acciones.length; i++){
           if(acciones[i].otPuntoInspeccionId == 0){
-            //acciones[i].otPuntoInspeccionId = resp.data["otPuntoInspeccionId"];
+            if(resp.data[i]["status"] == 201){
+              acciones[i].otPuntoInspeccionId = resp.data[i]["content"]["otPuntoInspeccionId"];
+              print(acciones[i].otPuntoInspeccionId);
+            }
           }
         }
       }
@@ -551,3 +552,4 @@ class PtosInspeccionServices {
     }
   }
 }
+

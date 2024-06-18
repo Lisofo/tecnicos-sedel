@@ -11,7 +11,7 @@ class TareasServices {
   String apiLink = Config.APIURL;
 
   Future getTareas(String token) async {
-    String link = '${apiLink}api/v1/tareas/';
+    String link = '${apiLink}api/v1/tareas/?sort=descripcion';
 
     try {
       var headers = {'Authorization': token};
@@ -30,7 +30,7 @@ class TareasServices {
     }
   }
   Future getTareasXTPI(TipoPtosInspeccion tPI,String modo, String token) async {
-    String link = '${apiLink}api/v1/tipos/puntos/${tPI.tipoPuntoInspeccionId}/tareas?modo=$modo';
+    String link = '${apiLink}api/v1/tipos/puntos/${tPI.tipoPuntoInspeccionId}/tareas?modo=$modo&sort=descripcion';
 
     try {
       var headers = {'Authorization': token};

@@ -23,6 +23,11 @@ class _ObservacionesPageState extends State<ObservacionesPage> {
   late String token = '';
   late List<Observacion> observaciones = [];
   late int marcaId = 0;
+  bool _isButtonEnabledObs = false;
+  bool _isButtonEnabledCom = false;
+  String _initialObs = '';
+  String _initialCom = '';
+
 
   @override
   void initState() {
@@ -30,11 +35,27 @@ class _ObservacionesPageState extends State<ObservacionesPage> {
     cargarDatos();
   }
 
+  void _obsChanged() {
+    setState(() {
+      _isButtonEnabledObs = observacionController.text != _initialObs;
+    });
+  }
+
+  void _comChanged() {
+    setState(() {
+      _isButtonEnabledCom = comentarioInternoController.text != _initialCom;
+    });
+  }
+
+
+
   cargarDatos() async {
     orden = context.read<OrdenProvider>().orden;
     token = context.read<OrdenProvider>().token;
     marcaId = context.read<OrdenProvider>().marcaId;
-    observaciones = await RevisionServices().getObservacion(orden, observacion, token);
+    if(orden.otRevisionId != 0){
+      observaciones = await RevisionServices().getObservacion(orden, token);
+    }
     if (observaciones.isNotEmpty) {
       observacion = observaciones[0];
     } else {
@@ -44,7 +65,12 @@ class _ObservacionesPageState extends State<ObservacionesPage> {
     setState(() {
       observacionController.text = observacion.observacion;
       comentarioInternoController.text = observacion.comentarioInterno;
+      _initialObs = observacion.observacion;
+      _initialCom = observacion.comentarioInterno;
     });
+
+    observacionController.addListener(_obsChanged);
+    comentarioInternoController.addListener(_comChanged);
   }
 
   @override
@@ -69,8 +95,7 @@ class _ObservacionesPageState extends State<ObservacionesPage> {
                 children: [
                   Container(
                     decoration: BoxDecoration(
-                      border: Border.all(
-                          color: colors.primary, width: 2),
+                      border: Border.all(color: colors.primary, width: 2),
                       borderRadius: BorderRadius.circular(5),
                       // color: Colors.white
                     ),
@@ -78,14 +103,13 @@ class _ObservacionesPageState extends State<ObservacionesPage> {
                       controller: observacionController,
                       maxLines: 6,
                       decoration: const InputDecoration(
-                          border: InputBorder.none,
-                          fillColor: Colors.white,
-                          filled: true),
+                        border: InputBorder.none,
+                        fillColor: Colors.white,
+                        filled: true
+                      ),
                     ),
                   ),
-                  const SizedBox(
-                    height: 20,
-                  ),
+                  const SizedBox(height: 20,),
                   const Text(
                     'Comentario interno:',
                     textAlign: TextAlign.start,
@@ -93,23 +117,21 @@ class _ObservacionesPageState extends State<ObservacionesPage> {
                   ),
                   Container(
                     decoration: BoxDecoration(
-                      border: Border.all(
-                          color: colors.primary, width: 2),
+                      border: Border.all(color: colors.primary, width: 2),
                       borderRadius: BorderRadius.circular(5),
                       // color: Colors.white
                     ),
-                    child: TextFormField(
+                    child: TextFormField(                      
                       controller: comentarioInternoController,
                       maxLines: 6,
                       decoration: const InputDecoration(
-                          border: InputBorder.none,
-                          fillColor: Colors.white,
-                          filled: true),
+                        border: InputBorder.none,
+                        fillColor: Colors.white,
+                        filled: true
+                      ),
                     ),
                   ),
-                  const SizedBox(
-                    height: 10,
-                  ),
+                  const SizedBox(height: 10,),
                   Align(
                     alignment: Alignment.center,
                     child: CustomButton(
@@ -119,11 +141,16 @@ class _ObservacionesPageState extends State<ObservacionesPage> {
                           content: Text('No puede de ingresar o editar datos.'),
                         ));
                         return Future.value(false);
-                      }
-                        guardarObservaciones();
+                        }
+                        if(_isButtonEnabledCom || _isButtonEnabledObs){
+                          guardarObservaciones();
+                        } else {
+                          null;
+                        }
                       },
                       text: 'Guardar',
                       tamano: 20,
+                      disabled: !_isButtonEnabledCom && !_isButtonEnabledObs,
                     ),
                   ),
                 ],
@@ -145,5 +172,12 @@ class _ObservacionesPageState extends State<ObservacionesPage> {
     } else {
       await RevisionServices().putObservacion(context, orden, observacion, token);
     }
+
+    setState(() {
+      _initialObs = observacionController.text;
+      _initialCom = comentarioInternoController.text;
+      _isButtonEnabledCom = false;
+      _isButtonEnabledObs = false;
+    });
   }
 }

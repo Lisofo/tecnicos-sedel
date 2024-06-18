@@ -223,8 +223,7 @@ class _PtosInspeccionActividadState extends State<PtosInspeccionActividad> {
                               setState(() {
                                 plagasSeleccionadas.removeAt(i);
                               });
-                              ScaffoldMessenger.of(context)
-                                  .showSnackBar(SnackBar(
+                              ScaffoldMessenger.of(context).showSnackBar(SnackBar(
                                 content: Text('$plaga borrado'),
                               ));
                             },
@@ -240,7 +239,7 @@ class _PtosInspeccionActividadState extends State<PtosInspeccionActividad> {
                             ),
                             child: ListTile(
                               title: Text(plaga.descPlaga),
-                              trailing: Text(plaga.cantidad.toString()),
+                              trailing: Text(plaga.cantidad == null ? '' : plaga.cantidad.toString()),
                             ),
                           );
                         }),
@@ -360,9 +359,7 @@ class _PtosInspeccionActividadState extends State<PtosInspeccionActividad> {
                           ),
                           child: ListTile(
                             title: Text(material.descripcion),
-                            subtitle: Text(material.lote == ''
-                                ? "No hay lote disponible"
-                                : material.lote.toString()),
+                            subtitle: Text(material.lote == '' ? "No hay lote disponible" : material.lote.toString()),
                             trailing: Text(material.cantidad.toString()),
                           ),
                         );
@@ -380,9 +377,9 @@ class _PtosInspeccionActividadState extends State<PtosInspeccionActividad> {
           child: ElevatedButton(
               clipBehavior: Clip.antiAlias,
               style: const ButtonStyle(
-                  backgroundColor: MaterialStatePropertyAll(Colors.white),
-                  elevation: MaterialStatePropertyAll(10),
-                  shape: MaterialStatePropertyAll(RoundedRectangleBorder(
+                  backgroundColor: WidgetStatePropertyAll(Colors.white),
+                  elevation: WidgetStatePropertyAll(10),
+                  shape: WidgetStatePropertyAll(RoundedRectangleBorder(
                       borderRadius: BorderRadius.horizontal(
                           left: Radius.circular(50),
                           right: Radius.circular(50))))),
@@ -411,34 +408,8 @@ class _PtosInspeccionActividadState extends State<PtosInspeccionActividad> {
   Future marcarPIActividad(int idPIAccion, String comentario) async {
     List<PtoTarea> agregarTareas = [];
     agregarTareas = agregarTareasSeleccionadas(agregarTareas, tareas);
-    List<RevisionPtoInspeccion> nuevosObjetos = [];
 
     for (var i = 0; i < ptoInspeccionSeleccionados.length; i++) {
-      RevisionPtoInspeccion nuevaRevisionPtoInspeccion = RevisionPtoInspeccion(
-        otPuntoInspeccionId: ptoInspeccionSeleccionados[i].otPuntoInspeccionId,
-        ordenTrabajoId: orden.ordenTrabajoId,
-        otRevisionId: orden.otRevisionId,
-        puntoInspeccionId: ptoInspeccionSeleccionados[i].puntoInspeccionId,
-        planoId: ptoInspeccionSeleccionados[i].planoId,
-        tipoPuntoInspeccionId: ptoInspeccionSeleccionados[i].tipoPuntoInspeccionId,
-        codTipoPuntoInspeccion: ptoInspeccionSeleccionados[i].codTipoPuntoInspeccion,
-        descTipoPuntoInspeccion: ptoInspeccionSeleccionados[i].descTipoPuntoInspeccion,
-        plagaObjetivoId: ptoInspeccionSeleccionados[i].plagaObjetivoId,
-        codPuntoInspeccion: ptoInspeccionSeleccionados[i].codPuntoInspeccion,
-        codigoBarra: ptoInspeccionSeleccionados[i].codigoBarra,
-        zona: ptoInspeccionSeleccionados[i].zona,
-        sector: ptoInspeccionSeleccionados[i].sector,
-        idPIAccion: idPIAccion,
-        piAccionId: idPIAccion,
-        codAccion: idPIAccion.toString(),
-        descPiAccion: ptoInspeccionSeleccionados[i].descPiAccion,
-        comentario: comentario,
-        materiales: materialesSeleccionados,
-        plagas: plagasSeleccionadas,
-        tareas: agregarTareas,
-        trasladoNuevo: [],
-        seleccionado: ptoInspeccionSeleccionados[i].seleccionado
-      );
       ptoInspeccionSeleccionados[i].codAccion = idPIAccion == 2 ? 'ACTIVIDAD' : 'MANTENIMIENTO';
       ptoInspeccionSeleccionados[i].idPIAccion = idPIAccion;
       ptoInspeccionSeleccionados[i].piAccionId = idPIAccion;
@@ -447,10 +418,9 @@ class _PtosInspeccionActividadState extends State<PtosInspeccionActividad> {
       ptoInspeccionSeleccionados[i].materiales = List<PtoMaterial>.from(materialesSeleccionados);
       ptoInspeccionSeleccionados[i].tareas = List<PtoTarea>.from(agregarTareas);
       ptoInspeccionSeleccionados[i].trasladoNuevo = [];
-      nuevosObjetos.add(nuevaRevisionPtoInspeccion);
       Provider.of<OrdenProvider>(context, listen: false).actualizarPunto(i, ptoInspeccionSeleccionados[i]);
     }
-    await postAcciones(nuevosObjetos);
+    await postAcciones(ptoInspeccionSeleccionados);
     subiendoAcciones = false;
   }
 
@@ -514,15 +484,15 @@ class _PtosInspeccionActividadState extends State<PtosInspeccionActividad> {
                     TextButton(
                       onPressed: () {
                         late PtoPlaga nuevaPlaga = PtoPlaga(
-                            otPiPlagaId: 0,
-                            otPuntoInspeccionId: 0,
-                            plagaId: nuevaPlagaSeleccionada!.plagaId,
-                            codPlaga: nuevaPlagaSeleccionada!.codPlaga,
-                            descPlaga: nuevaPlagaSeleccionada!.descripcion,
-                            cantidad: int.parse(nuevaCantidad));
+                          otPiPlagaId: 0,
+                          otPuntoInspeccionId: 0,
+                          plagaId: nuevaPlagaSeleccionada!.plagaId,
+                          codPlaga: nuevaPlagaSeleccionada!.codPlaga,
+                          descPlaga: nuevaPlagaSeleccionada!.descripcion,
+                          cantidad: nuevaCantidad == '' ? null : int.parse(nuevaCantidad)
+                        );
 
-                        if (nuevaPlagaSeleccionada != null &&
-                            nuevaCantidad.isNotEmpty) {
+                        if (nuevaPlagaSeleccionada != null) {
                           plagasSeleccionadas.add(nuevaPlaga);
                           Navigator.of(context).pop();
                           setState(() {

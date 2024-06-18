@@ -18,8 +18,6 @@ class OrdenProvider with ChangeNotifier {
   String _modo = '';
   int _tecnicoId = 0;
   List<Orden> ordenesEnProceso = [];
-
-
   Orden get orden => _orden;
   String get menu => _menu;
   String get token => _token;
@@ -113,6 +111,16 @@ class OrdenProvider with ChangeNotifier {
 
   void filtrarPuntosInspeccion2(String criterio) {
     _ptosInspeccion = _ptosInspeccionCompleta.where((pto) => pto.codigoBarra.contains(criterio)).toList();
+    notifyListeners();
+  }
+
+  void clearListaPto(){
+    _ptosInspeccion = [];
+    notifyListeners();
+  }
+
+  void cambiarEstadoOrden(String estado) {
+    _orden.estado = estado;
     notifyListeners();
   }
   

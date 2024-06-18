@@ -17,4 +17,5 @@ final router = GoRouter(initialLocation: '/', routes: [
   GoRoute(path: '/plagas', builder: (context, state) => const PlagasPage()),
   GoRoute(path: '/tareas', builder: (context, state) => const TareasPage()),
   GoRoute(path: '/validacion', builder: (context, state) => const ValidacionPage()),
+  GoRoute(path: '/resumenOrden', builder: (context, state) => const ResumenOrden()),
 ]);

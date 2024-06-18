@@ -87,7 +87,9 @@ class _PtosInspeccionPageState extends State<PtosInspeccionPage> {
     token = context.read<OrdenProvider>().token;
     orden = context.read<OrdenProvider>().orden;
     marcaId = context.read<OrdenProvider>().marcaId;
-    ptosInspeccion = await PtosInspeccionServices().getPtosInspeccion(context, orden, token);
+    if(orden.otRevisionId != 0) {
+      ptosInspeccion = await PtosInspeccionServices().getPtosInspeccion(context, orden, token);
+    }
     tiposDePuntos = await getTipos();
     plagasObjetivo = await PlagaServices().getPlagasObjetivo(context, token);
     Provider.of<OrdenProvider>(context, listen: false).setTipoPTI(selectedTipoPto);
@@ -102,7 +104,7 @@ class _PtosInspeccionPageState extends State<PtosInspeccionPage> {
     } else {
       return await PtosInspeccionServices().getTiposPtosInspeccion(token);
     }
-  } 
+  }
 
   Future<void> refreshData() async {
     ptosInspeccion = await PtosInspeccionServices().getPtosInspeccion(context, orden, token);
@@ -725,72 +727,47 @@ class _PtosInspeccionPageState extends State<PtosInspeccionPage> {
   }
 
   Future marcarPISinActividad(int idPIAccion, String comentario) async {
-    List<RevisionPtoInspeccion> nuevosObjetos = [];
     for (var i = 0; i < puntosSeleccionados.length; i++) {
-      RevisionPtoInspeccion nuevaRevisionPtoInspeccion = RevisionPtoInspeccion(
-        otPuntoInspeccionId: puntosSeleccionados[i].otPuntoInspeccionId,
-        ordenTrabajoId: orden.ordenTrabajoId,
-        otRevisionId: orden.otRevisionId,
-        puntoInspeccionId: puntosSeleccionados[i].puntoInspeccionId,
-        planoId: puntosSeleccionados[i].planoId,
-        tipoPuntoInspeccionId: puntosSeleccionados[i].tipoPuntoInspeccionId,
-        codTipoPuntoInspeccion: puntosSeleccionados[i].codTipoPuntoInspeccion,
-        descTipoPuntoInspeccion: '',
-        plagaObjetivoId: puntosSeleccionados[i].plagaObjetivoId,
-        codPuntoInspeccion: puntosSeleccionados[i].codPuntoInspeccion,
-        codigoBarra: puntosSeleccionados[i].codigoBarra,
-        zona: puntosSeleccionados[i].zona,
-        sector: puntosSeleccionados[i].sector,
-        idPIAccion: idPIAccion,
-        piAccionId: idPIAccion,
-        codAccion: idPIAccion.toString(),
-        descPiAccion: '',
-        comentario: comentario,
-        materiales: [],
-        plagas: [],
-        tareas: [],
-        trasladoNuevo: [],
-        seleccionado: puntosSeleccionados[i].seleccionado
-      );
-      nuevosObjetos.add(nuevaRevisionPtoInspeccion);
+      puntosSeleccionados[i].ordenTrabajoId = orden.ordenTrabajoId;
+      puntosSeleccionados[i].otRevisionId = orden.otRevisionId;
+      puntosSeleccionados[i].descTipoPuntoInspeccion = '';
+      puntosSeleccionados[i].idPIAccion = idPIAccion;
+      puntosSeleccionados[i].piAccionId = idPIAccion;
+      puntosSeleccionados[i].codAccion = idPIAccion.toString();
+      puntosSeleccionados[i].descPiAccion = '';
+      puntosSeleccionados[i].comentario = comentario;
+      puntosSeleccionados[i].materiales = [];
+      puntosSeleccionados[i].plagas = [];
+      puntosSeleccionados[i].tareas = [];
+      puntosSeleccionados[i].trasladoNuevo = [];
     }
-    await postAcciones(nuevosObjetos);
+    await postAcciones(puntosSeleccionados);
     await actualizarDatos();
     limpiarDatos();
     subiendoAcciones = false;
   }
 
   Future marcarPITraslado(int idPIAccion, ZonaPI zonaSeleccionada, String sector, String comentario) async {
-    List<RevisionPtoInspeccion> nuevosObjetos = [];
     for (var i = 0; i < puntosSeleccionados.length; i++) {
-      RevisionPtoInspeccion nuevaRevisionPtoInspeccion = RevisionPtoInspeccion(
-        otPuntoInspeccionId: puntosSeleccionados[i].otPuntoInspeccionId,
-        ordenTrabajoId: orden.ordenTrabajoId,
-        otRevisionId: orden.otRevisionId,
-        puntoInspeccionId: puntosSeleccionados[i].puntoInspeccionId,
-        planoId: puntosSeleccionados[i].planoId,
-        tipoPuntoInspeccionId: selectedTipoPto.tipoPuntoInspeccionId,
-        codTipoPuntoInspeccion: puntosSeleccionados[i].codTipoPuntoInspeccion,
-        descTipoPuntoInspeccion: '',
-        plagaObjetivoId: puntosSeleccionados[i].plagaObjetivoId,
-        codPuntoInspeccion: puntosSeleccionados[i].codPuntoInspeccion != '' ? puntosSeleccionados[i].codPuntoInspeccion : codPuntoInspeccionController.text,
-        codigoBarra: puntosSeleccionados[i].codigoBarra != '' ? puntosSeleccionados[i].codigoBarra : codigoBarraController.text,
-        zona: zonaSeleccionada.codZona,
-        sector: sector,
-        idPIAccion: idPIAccion,
-        piAccionId: 6,
-        codAccion: '6',
-        descPiAccion: '',
-        comentario: comentario,
-        materiales: [],
-        plagas: [],
-        tareas: [],
-        trasladoNuevo: [],
-        seleccionado: puntosSeleccionados[i].seleccionado
-      );
-      nuevosObjetos.add(nuevaRevisionPtoInspeccion);
+      puntosSeleccionados[i].ordenTrabajoId = orden.ordenTrabajoId;
+      puntosSeleccionados[i].otRevisionId = orden.otRevisionId;
+      puntosSeleccionados[i].tipoPuntoInspeccionId = selectedTipoPto.tipoPuntoInspeccionId;
+      puntosSeleccionados[i].descTipoPuntoInspeccion = '';
+      puntosSeleccionados[i].codPuntoInspeccion = puntosSeleccionados[i].codPuntoInspeccion != '' ? puntosSeleccionados[i].codPuntoInspeccion : codPuntoInspeccionController.text;
+      puntosSeleccionados[i].codigoBarra = puntosSeleccionados[i].codigoBarra != '' ? puntosSeleccionados[i].codigoBarra : codigoBarraController.text;
+      puntosSeleccionados[i].zona = zonaSeleccionada.codZona;
+      puntosSeleccionados[i].sector = sector;
+      puntosSeleccionados[i].idPIAccion = idPIAccion;
+      puntosSeleccionados[i].piAccionId = 6;
+      puntosSeleccionados[i].codAccion = '6';
+      puntosSeleccionados[i].descPiAccion = '';
+      puntosSeleccionados[i].comentario = comentario;
+      puntosSeleccionados[i].materiales = [];
+      puntosSeleccionados[i].plagas = [];
+      puntosSeleccionados[i].tareas = [];
+      puntosSeleccionados[i].trasladoNuevo = [];
     }
-    await postAcciones(nuevosObjetos);
+    await postAcciones(puntosSeleccionados);
     await actualizarDatos();
     limpiarDatos();
     subiendoAcciones = false;

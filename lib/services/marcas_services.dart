@@ -39,7 +39,7 @@ class MarcasServices {
     );
   }
 
-  Future<void> _mostrarError(BuildContext context, String mensaje) async {
+  Future<void> showErrorDialog(BuildContext context, String mensaje) async {
     showDialog(
       context: context,
       builder: (_) => AlertDialog(
@@ -69,12 +69,11 @@ class MarcasServices {
       marca.marcaId = resp.data['marcaId'];
 
       if (resp.statusCode == 201) {
-        Provider.of<OrdenProvider>(context, listen: false)
-            .setMarca(marca.marcaId);
+        Provider.of<OrdenProvider>(context, listen: false).setMarca(marca.marcaId);
         showDialogs(context, 'Acaba de marcar entrada, que tenga buena jornada',
             false, false);
       } else {
-        _mostrarError(context, 'Hubo un error al momento de marcar entrada');
+        showErrorDialog(context, 'Hubo un error al momento de marcar entrada');
       }
 
       return;
@@ -83,18 +82,20 @@ class MarcasServices {
         if (e.response != null) {
           final responseData = e.response!.data;
           if (responseData != null) {
-            final errors = responseData['errors'] as List<dynamic>;
-            final errorMessages = errors.map((error) {
+            if(e.response!.statusCode == 403){
+              showErrorDialog(context, 'Error: ${e.response!.data['message']}');
+            }else{
+              final errors = responseData['errors'] as List<dynamic>;
+              final errorMessages = errors.map((error) {
               return "Error: ${error['message']}";
             }).toList();
-            await _mostrarError(context, errorMessages.join('\n'));
-          } else {
-            await _mostrarError(context, 'Error: ${e.response!.data}');
+            showErrorDialog(context, errorMessages.join('\n'));
           }
-        } else {
-          await _mostrarError(context, 'Error: ${e.message}');
-        }
-      }
+          } else {
+            showErrorDialog(context, 'Error: ${e.response!.data}');
+          }
+        } 
+      } 
     }
   }
 
@@ -111,7 +112,7 @@ class MarcasServices {
             'Marcó salida correctamente, que tenga un buen dia', false, false);
         print('funciono marcar salida');
       } else {
-        _mostrarError(context, 'Hubo un error al momento de marcar entrada');
+        showErrorDialog(context, 'Hubo un error al momento de marcar entrada');
       }
 
       return;
@@ -120,18 +121,70 @@ class MarcasServices {
         if (e.response != null) {
           final responseData = e.response!.data;
           if (responseData != null) {
-            final errors = responseData['errors'] as List<dynamic>;
-            final errorMessages = errors.map((error) {
+            if(e.response!.statusCode == 403){
+              showErrorDialog(context, 'Error: ${e.response!.data['message']}');
+            }else{
+              final errors = responseData['errors'] as List<dynamic>;
+              final errorMessages = errors.map((error) {
               return "Error: ${error['message']}";
             }).toList();
-            await _mostrarError(context, errorMessages.join('\n'));
+            showErrorDialog(context, errorMessages.join('\n'));
+          }
           } else {
-            await _mostrarError(context, 'Error: ${e.response!.data}');
+            showErrorDialog(context, 'Error: ${e.response!.data}');
+          }
+        } 
+      } 
+    }
+  }
+
+  Future getUltimaMarca(BuildContext context, int tecnicoId, String token) async {
+    String link = '${apiUrl}api/v1/tecnicos/$tecnicoId/ultimaMarca';
+    try {
+      var headers = {'Authorization': token};
+      var resp = await _dio.request(
+        link,
+        options: Options(
+          method: 'GET',
+          headers: headers,
+        ),
+      );
+
+      late Marca marca;
+      if(resp.data == null) {
+        marca = Marca.empty();
+        marca.tecnicoId = tecnicoId;
+      } else {
+        marca = Marca.fromJson(resp.data);
+        if(marca.hasta != null) {
+          marca = Marca.empty();
+          marca.tecnicoId = tecnicoId;
+        }
+      }
+      return marca;
+
+    } catch (e) {
+      if (e is DioException) {
+        if (e.response != null) {
+          final responseData = e.response!.data;
+          if (responseData != null) {
+            if(e.response!.statusCode == 403){
+              showErrorDialog(context, 'Error: ${e.response!.data['message']}');
+            }else{
+              final errors = responseData['errors'] as List<dynamic>;
+              final errorMessages = errors.map((error) {
+              return "Error: ${error['message']}";
+            }).toList();
+            showErrorDialog(context, errorMessages.join('\n'));
+          }
+          } else {
+            showErrorDialog(context, 'Error: ${e.response!.data}');
           }
         } else {
-          await _mostrarError(context, 'Error: ${e.message}');
+          showErrorDialog(context, 'Error: ${e.message}');
         }
       }
     }
   }
+
 }

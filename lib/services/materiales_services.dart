@@ -42,7 +42,7 @@ class MaterialesServices {
     );
   }
 
-  Future<void> _mostrarError(BuildContext context, String mensaje) async {
+  Future<void> showErrorDialog(BuildContext context, String mensaje) async {
     showDialog(
       context: context,
       builder: (_) => AlertDialog(
@@ -158,9 +158,7 @@ class MaterialesServices {
 
       final List<dynamic> revisionMaterialesList = resp.data;
 
-      return revisionMaterialesList
-          .map((obj) => RevisionMaterial.fromJson(obj))
-          .toList();
+      return revisionMaterialesList.map((obj) => RevisionMaterial.fromJson(obj)).toList();
     } catch (e) {
       print(e);
     }
@@ -173,7 +171,7 @@ class MaterialesServices {
       "idsPlagas": plagasIds,
       "comentario": "",
       "cantidad": revisionMaterial.cantidad,
-      "idMaterialLote": revisionMaterial.lote.materialLoteId == 0 ? null : revisionMaterial.lote.materialLoteId,
+      "idMaterialLote": revisionMaterial.lote?.materialLoteId == 0 ? null : revisionMaterial.lote?.materialLoteId,
       "idMetodoAplicacion": revisionMaterial.metodoAplicacion.metodoAplicacionId,
       "ubicacion": revisionMaterial.ubicacion,
       "areaCobertura": revisionMaterial.areaCobertura,
@@ -201,18 +199,71 @@ class MaterialesServices {
         if (e.response != null) {
           final responseData = e.response!.data;
           if (responseData != null) {
-            final errors = responseData['errors'] as List<dynamic>;
-            final errorMessages = errors.map((error) {
+            if(e.response!.statusCode == 403){
+              showErrorDialog(context, 'Error: ${e.response!.data['message']}');
+            }else{
+              final errors = responseData['errors'] as List<dynamic>;
+              final errorMessages = errors.map((error) {
               return "Error: ${error['message']}";
             }).toList();
-            await _mostrarError(context, errorMessages.join('\n'));
-          } else {
-            await _mostrarError(context, 'Error: ${e.response!.data}');
+            showErrorDialog(context, errorMessages.join('\n'));
           }
-        } else {
-          await _mostrarError(context, 'Error: ${e.message}');
-        }
+          } else {
+            showErrorDialog(context, 'Error: ${e.response!.data}');
+          }
+        } 
+      } 
+    }
+  }
+
+  Future putRevisionMaterial(BuildContext context, Orden orden, List<int> plagasIds, RevisionMaterial revisionMaterial, String token) async {
+    
+    String link = '${apiUrl}api/v1/ordenes/${orden.ordenTrabajoId}/revisiones/${orden.otRevisionId}/materiales/${revisionMaterial.otMaterialId}';
+    var data = ({
+      "idsPlagas": plagasIds,
+      "comentario": "",
+      "cantidad": revisionMaterial.cantidad,
+      "idMaterialLote": revisionMaterial.lote?.materialLoteId == 0 ? null : revisionMaterial.lote?.materialLoteId,
+      "idMetodoAplicacion": revisionMaterial.metodoAplicacion.metodoAplicacionId,
+      "ubicacion": revisionMaterial.ubicacion,
+      "areaCobertura": revisionMaterial.areaCobertura,
+      "idMaterial": revisionMaterial.material.materialId
+    });
+
+    try {
+      var headers = {'Authorization': token};
+      var resp = await _dio.request(
+        link,
+        options: Options(
+          method: 'PUT',
+          headers: headers,
+        ),
+        data: data,
+      );
+      if (resp.statusCode == 200) {
+        await showDialogs(context, 'Material editado', true, false);
       }
+
+      return;
+    } catch (e) {
+      if (e is DioException) {
+        if (e.response != null) {
+          final responseData = e.response!.data;
+          if (responseData != null) {
+            if(e.response!.statusCode == 403){
+              showErrorDialog(context, 'Error: ${e.response!.data['message']}');
+            }else{
+              final errors = responseData['errors'] as List<dynamic>;
+              final errorMessages = errors.map((error) {
+              return "Error: ${error['message']}";
+            }).toList();
+            showErrorDialog(context, errorMessages.join('\n'));
+          }
+          } else {
+            showErrorDialog(context, 'Error: ${e.response!.data}');
+          }
+        } 
+      } 
     }
   }
 
@@ -235,18 +286,20 @@ class MaterialesServices {
         if (e.response != null) {
           final responseData = e.response!.data;
           if (responseData != null) {
-            final errors = responseData['errors'] as List<dynamic>;
-            final errorMessages = errors.map((error) {
+            if(e.response!.statusCode == 403){
+              showErrorDialog(context, 'Error: ${e.response!.data['message']}');
+            }else{
+              final errors = responseData['errors'] as List<dynamic>;
+              final errorMessages = errors.map((error) {
               return "Error: ${error['message']}";
             }).toList();
-            await _mostrarError(context, errorMessages.join('\n'));
-          } else {
-            await _mostrarError(context, 'Error: ${e.response!.data}');
+            showErrorDialog(context, errorMessages.join('\n'));
           }
-        } else {
-          await _mostrarError(context, 'Error: ${e.message}');
-        }
-      }
+          } else {
+            showErrorDialog(context, 'Error: ${e.response!.data}');
+          }
+        } 
+      } 
     }
   }
 
@@ -271,19 +324,19 @@ class MaterialesServices {
           final responseData = e.response!.data;
           if (responseData != null) {
             if(e.response!.statusCode == 403){
-              _mostrarError(context, 'Error: ${e.response!.data['message']}');
+              showErrorDialog(context, 'Error: ${e.response!.data['message']}');
             }else{
               final errors = responseData['errors'] as List<dynamic>;
               final errorMessages = errors.map((error) {
               return "Error: ${error['message']}";
             }).toList();
-            _mostrarError(context, errorMessages.join('\n'));
+            showErrorDialog(context, errorMessages.join('\n'));
           }
           } else {
-            _mostrarError(context, 'Error: ${e.response!.data}');
+            showErrorDialog(context, 'Error: ${e.response!.data}');
           }
         } else {
-          _mostrarError(context, 'Error: ${e.message}');
+          showErrorDialog(context, 'Error: ${e.message}');
         }
       }
     }

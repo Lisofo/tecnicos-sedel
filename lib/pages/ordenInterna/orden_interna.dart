@@ -76,6 +76,7 @@ class _OrdenInternaState extends State<OrdenInterna> {
 
   @override
   Widget build(BuildContext context) {
+    print('dibuje orden');
     final colors = Theme.of(context).colorScheme;
     return SafeArea(
       child: Scaffold(
@@ -203,7 +204,7 @@ class _OrdenInternaState extends State<OrdenInterna> {
                           TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
                     ),
                     Text(
-                      orden.estado,
+                      context.watch<OrdenProvider>().orden.estado,
                       style: const TextStyle(fontSize: 16),
                     )
                   ],
@@ -309,21 +310,17 @@ class _OrdenInternaState extends State<OrdenInterna> {
               ),
               CustomButton(
                 clip: Clip.antiAlias,
-                onPressed: marcaId != 0 && orden.estado == 'EN PROCESO'
-                    ? () => _mostrarDialogoConfirmacion('finalizar')
-                    : null,
+                onPressed: marcaId != 0 && orden.estado == 'EN PROCESO' ? () => router.push('/resumenOrden') : null, /*_mostrarDialogoConfirmacion('finalizar')*/ 
                 text: 'Finalizar',
                 tamano: 18,
                 disabled: !(marcaId != 0 && orden.estado == 'EN PROCESO'),
               ),
               IconButton(
-                  onPressed: marcaId != 0 && orden.estado == 'EN PROCESO'
-                      ? () => volverAPendiente(orden)
-                      : null,
-                  icon: Icon(Icons.backspace,
-                      color: marcaId != 0 && orden.estado == 'EN PROCESO'
-                          ? colors.primary
-                          : Colors.grey)),
+                onPressed: marcaId != 0 && orden.estado == 'EN PROCESO' ? () => volverAPendiente(orden) : null,
+                icon: Icon(Icons.backspace,
+                  color: marcaId != 0 && orden.estado == 'EN PROCESO' ? colors.primary : Colors.grey
+                )
+              ),
             ],
           ),
         ),
@@ -381,9 +378,8 @@ class _OrdenInternaState extends State<OrdenInterna> {
       if (estado == 'EN PROCESO') {
         await RevisionServices().postRevision(uId, orden, token);
       }
+      await OrdenServices.showDialogs(context, 'Estado cambiado correctamente', false, false);
       setState(() {});
-
-      print('hola entrada');
       ejecutando = false;
     }
   }

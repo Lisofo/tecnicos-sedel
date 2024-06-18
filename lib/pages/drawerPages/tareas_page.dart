@@ -46,7 +46,9 @@ class _TareasPageState extends State<TareasPage> {
     tareas = await TareasServices().getTareas(token);
     orden = context.read<OrdenProvider>().orden;
     marcaId = context.read<OrdenProvider>().marcaId;
-    revisionTareasList = await RevisionServices().getRevisionTareas(orden, token);
+    if(orden.otRevisionId != 0){
+      revisionTareasList = await RevisionServices().getRevisionTareas(orden, token);
+    }
     setState(() {});
   }
 
