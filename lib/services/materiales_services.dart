@@ -61,7 +61,7 @@ class MaterialesServices {
     );
   }
 
-  Future getMateriales(String token) async {
+  Future getMateriales(BuildContext context,String token) async {
     String link = '${apiUrl}api/v1/materiales/?enAppTecnico=S&enUso=S';
     try {
       var headers = {'Authorization': token};
@@ -77,11 +77,30 @@ class MaterialesServices {
 
       return materialList.map((obj) => Materiales.fromJson(obj)).toList();
     } catch (e) {
-      print(e);
+      if (e is DioException) {
+        if (e.response != null) {
+          final responseData = e.response!.data;
+          if (responseData != null) {
+            if(e.response!.statusCode == 403){
+              showErrorDialog(context, 'Error: ${e.response!.data['message']}');
+            }else if(e.response!.statusCode == 500){
+              showErrorDialog(context, 'Error: No se pudo completar la solicitud');
+            } else{
+              final errors = responseData['errors'] as List<dynamic>;
+              final errorMessages = errors.map((error) {
+                return "Error: ${error['message']}";
+              }).toList();
+              showErrorDialog(context, errorMessages.join('\n'));
+            }
+          } else {
+            showErrorDialog(context, 'Error: ${e.response!.data}');
+          }
+        } 
+      } 
     }
   }
 
-  Future getMaterialesXTPI(TipoPtosInspeccion tPI, String token) async {
+  Future getMaterialesXTPI(BuildContext context,TipoPtosInspeccion tPI, String token) async {
     String link =
         '${apiUrl}api/v1/tipos/puntos/${tPI.tipoPuntoInspeccionId}/materiales?sort=descripcion';
 
@@ -98,11 +117,30 @@ class MaterialesServices {
 
       return materialXPTIList.map((obj) => MaterialXtpi.fromJson(obj)).toList();
     } catch (e) {
-      print(e);
+      if (e is DioException) {
+        if (e.response != null) {
+          final responseData = e.response!.data;
+          if (responseData != null) {
+            if(e.response!.statusCode == 403){
+              showErrorDialog(context, 'Error: ${e.response!.data['message']}');
+            }else if(e.response!.statusCode == 500){
+              showErrorDialog(context, 'Error: No se pudo completar la solicitud');
+            } else{
+              final errors = responseData['errors'] as List<dynamic>;
+              final errorMessages = errors.map((error) {
+                return "Error: ${error['message']}";
+              }).toList();
+              showErrorDialog(context, errorMessages.join('\n'));
+            }
+          } else {
+            showErrorDialog(context, 'Error: ${e.response!.data}');
+          }
+        } 
+      } 
     }
   }
 
-  Future getLotes(int materialId, String token) async {
+  Future getLotes(BuildContext context,int materialId, String token) async {
     String link = '${apiUrl}api/v1/materiales/$materialId/lotes';
 
     try {
@@ -119,11 +157,30 @@ class MaterialesServices {
 
       return lotesList.map((obj) => Lote.fromJson(obj)).toList();
     } catch (e) {
-      print(e);
+      if (e is DioException) {
+        if (e.response != null) {
+          final responseData = e.response!.data;
+          if (responseData != null) {
+            if(e.response!.statusCode == 403){
+              showErrorDialog(context, 'Error: ${e.response!.data['message']}');
+            }else if(e.response!.statusCode == 500){
+              showErrorDialog(context, 'Error: No se pudo completar la solicitud');
+            } else{
+              final errors = responseData['errors'] as List<dynamic>;
+              final errorMessages = errors.map((error) {
+                return "Error: ${error['message']}";
+              }).toList();
+              showErrorDialog(context, errorMessages.join('\n'));
+            }
+          } else {
+            showErrorDialog(context, 'Error: ${e.response!.data}');
+          }
+        } 
+      } 
     }
   }
 
-  Future getMetodosAplicacion(String token) async {
+  Future getMetodosAplicacion(BuildContext context,String token) async {
     String link = '${apiUrl}api/v1/metodos-aplicacion/';
     try {
       var headers = {'Authorization': token};
@@ -139,11 +196,30 @@ class MaterialesServices {
 
       return metodosList.map((obj) => MetodoAplicacion.fromJson(obj)).toList();
     } catch (e) {
-      print(e);
+      if (e is DioException) {
+        if (e.response != null) {
+          final responseData = e.response!.data;
+          if (responseData != null) {
+            if(e.response!.statusCode == 403){
+              showErrorDialog(context, 'Error: ${e.response!.data['message']}');
+            }else if(e.response!.statusCode == 500){
+              showErrorDialog(context, 'Error: No se pudo completar la solicitud');
+            } else{
+              final errors = responseData['errors'] as List<dynamic>;
+              final errorMessages = errors.map((error) {
+                return "Error: ${error['message']}";
+              }).toList();
+              showErrorDialog(context, errorMessages.join('\n'));
+            }
+          } else {
+            showErrorDialog(context, 'Error: ${e.response!.data}');
+          }
+        } 
+      } 
     }
   }
 
-  Future getRevisionMateriales(Orden orden, String token) async {
+  Future getRevisionMateriales(BuildContext context,Orden orden, String token) async {
     String link = '${apiUrl}api/v1/ordenes/${orden.ordenTrabajoId}/revisiones/${orden.otRevisionId}/materiales';
 
     try {
@@ -160,7 +236,26 @@ class MaterialesServices {
 
       return revisionMaterialesList.map((obj) => RevisionMaterial.fromJson(obj)).toList();
     } catch (e) {
-      print(e);
+      if (e is DioException) {
+        if (e.response != null) {
+          final responseData = e.response!.data;
+          if (responseData != null) {
+            if(e.response!.statusCode == 403){
+              showErrorDialog(context, 'Error: ${e.response!.data['message']}');
+            }else if(e.response!.statusCode == 500){
+              showErrorDialog(context, 'Error: No se pudo completar la solicitud');
+            } else{
+              final errors = responseData['errors'] as List<dynamic>;
+              final errorMessages = errors.map((error) {
+                return "Error: ${error['message']}";
+              }).toList();
+              showErrorDialog(context, errorMessages.join('\n'));
+            }
+          } else {
+            showErrorDialog(context, 'Error: ${e.response!.data}');
+          }
+        } 
+      } 
     }
   }
 

@@ -65,8 +65,8 @@ class _PtosInspeccionActividadState extends State<PtosInspeccionActividad> {
     final String modo = context.read<OrdenProvider>().modo;
     tPISeleccionado = context.read<OrdenProvider>().tipoPtosInspeccion;
     ptoInspeccionSeleccionados = context.read<OrdenProvider>().puntosSeleccionados;
-    tareas = await TareasServices().getTareasXTPI(tPISeleccionado, modo, token);
-    materiales = await MaterialesServices().getMaterialesXTPI(tPISeleccionado, token);
+    tareas = await TareasServices().getTareasXTPI(context, tPISeleccionado, modo, token);
+    materiales = await MaterialesServices().getMaterialesXTPI(context, tPISeleccionado, token);
     
     if (orden.estado == "EN PROCESO" && marcaId != 0) {
       isReadOnly = false;
@@ -432,7 +432,7 @@ class _PtosInspeccionActividadState extends State<PtosInspeccionActividad> {
   Widget PopUpPlagas(BuildContext context) {
     return InkWell(
       onTap: () async {
-        plagas = await PlagaServices().getPlagasXTPI(tPISeleccionado, token);
+        plagas = await PlagaServices().getPlagasXTPI(context, tPISeleccionado, token);
         showDialog(
           context: context,
           builder: (BuildContext context) {
@@ -601,7 +601,7 @@ class _PtosInspeccionActividadState extends State<PtosInspeccionActividad> {
   }
 
   Future<void> cargarLotes() async {
-    lotesVencimientos = await MaterialesServices().getLotes(materialSeleccionado!.materialId, token);
+    lotesVencimientos = await MaterialesServices().getLotes(context, materialSeleccionado!.materialId, token);
     setState(() {});
   }
 

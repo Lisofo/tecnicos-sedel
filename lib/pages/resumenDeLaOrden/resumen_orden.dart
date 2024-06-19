@@ -59,14 +59,14 @@ class _ResumenOrdenState extends State<ResumenOrden> {
     if(orden.tipoOrden.codTipoOrden == 'N'){
       ptosInspeccion = await PtosInspeccionServices().getPtosInspeccion(context, orden, token);
       faltanCompletarPtos = ptosInspeccion.any((pto)=> pto.otPuntoInspeccionId == 0);
-      tareas = await RevisionServices().getRevisionTareas(orden, token);
-      materiales = await MaterialesServices().getRevisionMateriales(orden, token);
-      plagas = await RevisionServices().getRevisionPlagas(orden, token);
+      tareas = await RevisionServices().getRevisionTareas(context, orden, token);
+      materiales = await MaterialesServices().getRevisionMateriales(context, orden, token);
+      plagas = await RevisionServices().getRevisionPlagas(context, orden, token);
     } else if(orden.tipoOrden.codTipoOrden == 'N' || orden.tipoOrden.codTipoOrden == 'D') {
-      materiales = await MaterialesServices().getRevisionMateriales(orden, token);
-      plagas = await RevisionServices().getRevisionPlagas(orden, token);
+      materiales = await MaterialesServices().getRevisionMateriales(context, orden, token);
+      plagas = await RevisionServices().getRevisionPlagas(context, orden, token);
     }
-    observaciones = await RevisionServices().getObservacion(orden, token);
+    observaciones = await RevisionServices().getObservacion(context, orden, token);
     if (observaciones.isNotEmpty) {
       observacion = observaciones[0];
     } else {

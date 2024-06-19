@@ -47,7 +47,7 @@ class PtosInspeccionServices {
     );
   }
 
-  Future<void> mostrarError(BuildContext context, String mensaje) async {
+  Future<void> showErrorDialog(BuildContext context, String mensaje) async {
     showDialog(
       context: context,
       builder: (_) => AlertDialog(
@@ -66,7 +66,7 @@ class PtosInspeccionServices {
     );
   }
 
-  Future getTiposPtosInspeccion(String token) async {
+  Future getTiposPtosInspeccion(BuildContext context, String token) async {
     String link = '${apiUrl}api/v1/tipos/puntos';
 
     try {
@@ -82,7 +82,26 @@ class PtosInspeccionServices {
       var retorno = tipoPtoInspeccionList.map((e) => TipoPtosInspeccion.fromJson(e)).toList();
       return retorno;
     } catch (e) {
-      print(e);
+      if (e is DioException) {
+        if (e.response != null) {
+          final responseData = e.response!.data;
+          if (responseData != null) {
+            if(e.response!.statusCode == 403){
+              showErrorDialog(context, 'Error: ${e.response!.data['message']}');
+            }else if(e.response!.statusCode == 500){
+              showErrorDialog(context, 'Error: No se pudo completar la solicitud');
+            } else{
+              final errors = responseData['errors'] as List<dynamic>;
+              final errorMessages = errors.map((error) {
+                return "Error: ${error['message']}";
+              }).toList();
+              showErrorDialog(context, errorMessages.join('\n'));
+            }
+          } else {
+            showErrorDialog(context, 'Error: ${e.response!.data}');
+          }
+        } 
+      } 
     }
   }
 
@@ -105,7 +124,26 @@ class PtosInspeccionServices {
 
       return retorno;
     } catch (e) {
-      print(e);
+      if (e is DioException) {
+        if (e.response != null) {
+          final responseData = e.response!.data;
+          if (responseData != null) {
+            if(e.response!.statusCode == 403){
+              showErrorDialog(context, 'Error: ${e.response!.data['message']}');
+            }else if(e.response!.statusCode == 500){
+              showErrorDialog(context, 'Error: No se pudo completar la solicitud');
+            } else{
+              final errors = responseData['errors'] as List<dynamic>;
+              final errorMessages = errors.map((error) {
+                return "Error: ${error['message']}";
+              }).toList();
+              showErrorDialog(context, errorMessages.join('\n'));
+            }
+          } else {
+            showErrorDialog(context, 'Error: ${e.response!.data}');
+          }
+        } 
+      } 
     }
   }
 
@@ -185,12 +223,12 @@ class PtosInspeccionServices {
             final errorMessages = errors.map((error) {
               return "Error: ${error['message']}";
             }).toList();
-            await mostrarError(context, errorMessages.join('\n'));
+            await showErrorDialog(context, errorMessages.join('\n'));
           } else {
-            await mostrarError(context, 'Error: ${e.response!.data}');
+            await showErrorDialog(context, 'Error: ${e.response!.data}');
           }
         } else {
-          await mostrarError(context, 'Error: ${e.message}');
+          await showErrorDialog(context, 'Error: ${e.message}');
         }
       }
     }
@@ -283,12 +321,12 @@ class PtosInspeccionServices {
             final errorMessages = errors.map((error) {
               return "Error: ${error['message']}";
             }).toList();
-            await mostrarError(context, errorMessages.join('\n'));
+            await showErrorDialog(context, errorMessages.join('\n'));
           } else {
-            await mostrarError(context, 'Error: ${e.response!.data}');
+            await showErrorDialog(context, 'Error: ${e.response!.data}');
           }
         } else {
-          await mostrarError(context, 'Error: ${e.message}');
+          await showErrorDialog(context, 'Error: ${e.message}');
         }
       }
     }
@@ -318,12 +356,12 @@ class PtosInspeccionServices {
             final errorMessages = errors.map((error) {
               return "Error: ${error['message']}";
             }).toList();
-            await mostrarError(context, errorMessages.join('\n'));
+            await showErrorDialog(context, errorMessages.join('\n'));
           } else {
-            await mostrarError(context, 'Error: ${e.response!.data}');
+            await showErrorDialog(context, 'Error: ${e.response!.data}');
           }
         } else {
-          await mostrarError(context, 'Error: ${e.message}');
+          await showErrorDialog(context, 'Error: ${e.message}');
         }
       }
     }
@@ -353,12 +391,12 @@ class PtosInspeccionServices {
             final errorMessages = errors.map((error) {
               return "Error: ${error['message']}";
             }).toList();
-            await mostrarError(context, errorMessages.join('\n'));
+            await showErrorDialog(context, errorMessages.join('\n'));
           } else {
-            await mostrarError(context, 'Error: ${e.response!.data}');
+            await showErrorDialog(context, 'Error: ${e.response!.data}');
           }
         } else {
-          await mostrarError(context, 'Error: ${e.message}');
+          await showErrorDialog(context, 'Error: ${e.message}');
         }
       }
     }
@@ -486,12 +524,12 @@ class PtosInspeccionServices {
             final errorMessages = errors.map((error) {
               return "Error: ${error['message']}";
             }).toList();
-            await mostrarError(context, errorMessages.join('\n'));
+            await showErrorDialog(context, errorMessages.join('\n'));
           } else {
-            await mostrarError(context, 'Error: ${e.response!.data}');
+            await showErrorDialog(context, 'Error: ${e.response!.data}');
           }
         } else {
-          await mostrarError(context, 'Error: ${e.message}');
+          await showErrorDialog(context, 'Error: ${e.message}');
         }
       }
     }
@@ -541,12 +579,12 @@ class PtosInspeccionServices {
             final errorMessages = errors.map((error) {
               return "Error: ${error['message']}";
             }).toList();
-            await mostrarError(context, errorMessages.join('\n'));
+            await showErrorDialog(context, errorMessages.join('\n'));
           } else {
-            await mostrarError(context, 'Error: ${e.response!.data}');
+            await showErrorDialog(context, 'Error: ${e.response!.data}');
           }
         } else {
-          await mostrarError(context, 'Error: ${e.message}');
+          await showErrorDialog(context, 'Error: ${e.message}');
         }
       }
     }

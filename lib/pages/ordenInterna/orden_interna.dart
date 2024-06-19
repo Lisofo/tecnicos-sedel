@@ -373,7 +373,7 @@ class _OrdenInternaState extends State<OrdenInterna> {
 
       await OrdenServices().patchOrden(context, orden, estado, ubicacionId, token);
       if (estado == 'EN PROCESO') {
-        await RevisionServices().postRevision(uId, orden, token);
+        await RevisionServices().postRevision(context, uId, orden, token);
       }
       await OrdenServices.showDialogs(context, 'Estado cambiado correctamente', false, false);
       setState(() {});

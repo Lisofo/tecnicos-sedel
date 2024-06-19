@@ -44,11 +44,11 @@ class _TareasPageState extends State<TareasPage> {
 
   cargarDatos() async {
     token = context.read<OrdenProvider>().token;
-    tareas = await TareasServices().getTareas(token);
+    tareas = await TareasServices().getTareas(context, token);
     orden = context.read<OrdenProvider>().orden;
     marcaId = context.read<OrdenProvider>().marcaId;
     if(orden.otRevisionId != 0){
-      revisionTareasList = await RevisionServices().getRevisionTareas(orden, token);
+      revisionTareasList = await RevisionServices().getRevisionTareas(context, orden, token);
     }
     setState(() {});
   }

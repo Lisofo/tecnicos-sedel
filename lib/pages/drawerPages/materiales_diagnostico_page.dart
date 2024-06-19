@@ -52,8 +52,8 @@ class _MaterialesDiagnosticoPageState extends State<MaterialesDiagnosticoPage> {
     token = context.read<OrdenProvider>().token;
     orden = context.read<OrdenProvider>().orden;
     marcaId = context.read<OrdenProvider>().marcaId;
-    materiales = await MaterialesDiagnosticoServices().getMateriales(token);
-    revisionMaterialesList = await MaterialesDiagnosticoServices().getRevisionMateriales(orden, token);
+    materiales = await MaterialesDiagnosticoServices().getMateriales(context, token);
+    revisionMaterialesList = await MaterialesDiagnosticoServices().getRevisionMateriales(context, orden, token);
     setState(() {});
   }
 
@@ -544,7 +544,7 @@ class _MaterialesDiagnosticoPageState extends State<MaterialesDiagnosticoPage> {
                 await MaterialesDiagnosticoServices().putRevisionMaterial(context, orden, nuevaRevisionMaterial, token);
                 comentarioController.text = '';
                 cantidadController.text = '';
-                revisionMaterialesList = await MaterialesDiagnosticoServices().getRevisionMateriales(orden, token);
+                revisionMaterialesList = await MaterialesDiagnosticoServices().getRevisionMateriales(context, orden, token);
                 setState(() {});
               },
             ),

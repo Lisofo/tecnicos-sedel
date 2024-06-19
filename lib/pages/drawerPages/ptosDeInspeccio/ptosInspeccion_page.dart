@@ -99,10 +99,10 @@ class _PtosInspeccionPageState extends State<PtosInspeccionPage> {
   Future<dynamic> getTipos() async {
     late List<TipoPtosInspeccion> tiposDePuntosFiltrados = [];
     if(!filtro2){
-      tiposDePuntosFiltrados = await PtosInspeccionServices().getTiposPtosInspeccion(token);
+      tiposDePuntosFiltrados = await PtosInspeccionServices().getTiposPtosInspeccion(context, token);
       return tiposDePuntosFiltrados.where((pto)=> cantidadSolo(pto) > 0).toList();
     } else {
-      return await PtosInspeccionServices().getTiposPtosInspeccion(token);
+      return await PtosInspeccionServices().getTiposPtosInspeccion(context, token);
     }
   }
 

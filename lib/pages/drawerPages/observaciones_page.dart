@@ -54,7 +54,7 @@ class _ObservacionesPageState extends State<ObservacionesPage> {
     token = context.read<OrdenProvider>().token;
     marcaId = context.read<OrdenProvider>().marcaId;
     if(orden.otRevisionId != 0){
-      observaciones = await RevisionServices().getObservacion(orden, token);
+      observaciones = await RevisionServices().getObservacion(context, orden, token);
     }
     if (observaciones.isNotEmpty) {
       observacion = observaciones[0];

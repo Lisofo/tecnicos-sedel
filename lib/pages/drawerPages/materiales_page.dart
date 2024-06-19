@@ -55,17 +55,17 @@ class _MaterialesPageState extends State<MaterialesPage> {
     token = context.read<OrdenProvider>().token;
     orden = context.read<OrdenProvider>().orden;
     marcaId = context.read<OrdenProvider>().marcaId;
-    materiales = await MaterialesServices().getMateriales(token);
+    materiales = await MaterialesServices().getMateriales(context, token);
     if(orden.otRevisionId != 0) {
-      revisionMaterialesList = await MaterialesServices().getRevisionMateriales(orden, token);
+      revisionMaterialesList = await MaterialesServices().getRevisionMateriales(context, orden, token);
     }
     setState(() {});
   }
 
   Future<bool> _showMaterialDetails(BuildContext context, Materiales material) async {
-    plagas = await PlagaServices().getPlagas(token);
-    lotes = await MaterialesServices().getLotes(selectedMaterial.materialId, token);
-    metodosAplicacion = await MaterialesServices().getMetodosAplicacion(token);
+    plagas = await PlagaServices().getPlagas(context, token);
+    lotes = await MaterialesServices().getLotes(context, selectedMaterial.materialId, token);
+    metodosAplicacion = await MaterialesServices().getMetodosAplicacion(context, token);
     selectedMetodo = MetodoAplicacion.empty();
     selectedLote = Lote.empty();
 
@@ -556,9 +556,9 @@ class _MaterialesPageState extends State<MaterialesPage> {
       selectedLote = Lote.empty();
       selectedMetodo = MetodoAplicacion.empty();
     }
-    plagas = await PlagaServices().getPlagas(token);
-    lotes = await MaterialesServices().getLotes(material.material.materialId, token);
-    metodosAplicacion = await MaterialesServices().getMetodosAplicacion(token);
+    plagas = await PlagaServices().getPlagas(context, token);
+    lotes = await MaterialesServices().getLotes(context, material.material.materialId, token);
+    metodosAplicacion = await MaterialesServices().getMetodosAplicacion(context, token);
 
     showDialog(
       context: context,
@@ -686,7 +686,7 @@ class _MaterialesPageState extends State<MaterialesPage> {
                     ubicacionController.text = '';
                     areaController.text = '';
                     cantidadController.text = '';
-                    revisionMaterialesList = await MaterialesServices().getRevisionMateriales(orden, token);
+                    revisionMaterialesList = await MaterialesServices().getRevisionMateriales(context, orden, token);
                     setState(() {});
                   } else {
                     showDialog(

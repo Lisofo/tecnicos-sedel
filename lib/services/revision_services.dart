@@ -37,7 +37,7 @@ class RevisionServices {
               child: const Text('OK'),
             ),
           ],
-        );
+        ); 
       },
     );
   }
@@ -61,7 +61,7 @@ class RevisionServices {
     );
   }
 
-  Future postRevision(int uId, Orden orden, String token) async {
+  Future postRevision(BuildContext context, int uId, Orden orden, String token) async {
     String link = apiLink;
     link += 'api/v1/ordenes/${orden.ordenTrabajoId}/revisiones';
     var data = ({"idUsuario": uId, "ordinal": 0, "comentario": "Revision del Técnico"});
@@ -79,7 +79,26 @@ class RevisionServices {
       }
       return;
     } catch (e) {
-      print(e);
+      if (e is DioException) {
+        if (e.response != null) {
+          final responseData = e.response!.data;
+          if (responseData != null) {
+            if(e.response!.statusCode == 403){
+              showErrorDialog(context, 'Error: ${e.response!.data['message']}');
+            }else if(e.response!.statusCode == 500){
+              showErrorDialog(context, 'Error: No se pudo completar la solicitud');
+            } else{
+              final errors = responseData['errors'] as List<dynamic>;
+              final errorMessages = errors.map((error) {
+                return "Error: ${error['message']}";
+              }).toList();
+              showErrorDialog(context, errorMessages.join('\n'));
+            }
+          } else {
+            showErrorDialog(context, 'Error: ${e.response!.data}');
+          }
+        } 
+      } 
     }
   }
 
@@ -160,7 +179,7 @@ class RevisionServices {
     }
   }
 
-  Future getObservacion(Orden orden, String token) async {
+  Future getObservacion(BuildContext context, Orden orden, String token) async {
     String link = apiLink;
     link += 'api/v1/ordenes/${orden.ordenTrabajoId}/revisiones/${orden.otRevisionId}/observaciones';
 
@@ -178,11 +197,30 @@ class RevisionServices {
 
       return retorno;
     } catch (e) {
-      print(e);
+      if (e is DioException) {
+        if (e.response != null) {
+          final responseData = e.response!.data;
+          if (responseData != null) {
+            if(e.response!.statusCode == 403){
+              showErrorDialog(context, 'Error: ${e.response!.data['message']}');
+            }else if(e.response!.statusCode == 500){
+              showErrorDialog(context, 'Error: No se pudo completar la solicitud');
+            } else{
+              final errors = responseData['errors'] as List<dynamic>;
+              final errorMessages = errors.map((error) {
+                return "Error: ${error['message']}";
+              }).toList();
+              showErrorDialog(context, errorMessages.join('\n'));
+            }
+          } else {
+            showErrorDialog(context, 'Error: ${e.response!.data}');
+          }
+        } 
+      } 
     }
   }
 
-  Future getRevisionTareas(Orden orden, String token) async {
+  Future getRevisionTareas(BuildContext context, Orden orden, String token) async {
     String link = '${apiLink}api/v1/ordenes/${orden.ordenTrabajoId}/revisiones/${orden.otRevisionId}/tareas';
 
     try {
@@ -200,7 +238,26 @@ class RevisionServices {
           .map((obj) => RevisionTarea.fromJson(obj))
           .toList();
     } catch (e) {
-      print(e);
+      if (e is DioException) {
+        if (e.response != null) {
+          final responseData = e.response!.data;
+          if (responseData != null) {
+            if(e.response!.statusCode == 403){
+              showErrorDialog(context, 'Error: ${e.response!.data['message']}');
+            }else if(e.response!.statusCode == 500){
+              showErrorDialog(context, 'Error: No se pudo completar la solicitud');
+            } else{
+              final errors = responseData['errors'] as List<dynamic>;
+              final errorMessages = errors.map((error) {
+                return "Error: ${error['message']}";
+              }).toList();
+              showErrorDialog(context, errorMessages.join('\n'));
+            }
+          } else {
+            showErrorDialog(context, 'Error: ${e.response!.data}');
+          }
+        } 
+      } 
     }
   }
 
@@ -283,7 +340,7 @@ class RevisionServices {
     }
   }
 
-  Future getRevisionPlagas(Orden orden, String token) async {
+  Future getRevisionPlagas(BuildContext context, Orden orden, String token) async {
     String link = '${apiLink}api/v1/ordenes/${orden.ordenTrabajoId}/revisiones/${orden.otRevisionId}/plagas';
 
     try {
@@ -299,7 +356,26 @@ class RevisionServices {
 
       return revisionPlagasList.map((obj) => RevisionPlaga.fromJson(obj)).toList();
     } catch (e) {
-      print(e);
+      if (e is DioException) {
+        if (e.response != null) {
+          final responseData = e.response!.data;
+          if (responseData != null) {
+            if(e.response!.statusCode == 403){
+              showErrorDialog(context, 'Error: ${e.response!.data['message']}');
+            }else if(e.response!.statusCode == 500){
+              showErrorDialog(context, 'Error: No se pudo completar la solicitud');
+            } else{
+              final errors = responseData['errors'] as List<dynamic>;
+              final errorMessages = errors.map((error) {
+                return "Error: ${error['message']}";
+              }).toList();
+              showErrorDialog(context, errorMessages.join('\n'));
+            }
+          } else {
+            showErrorDialog(context, 'Error: ${e.response!.data}');
+          }
+        } 
+      } 
     }
   }
 

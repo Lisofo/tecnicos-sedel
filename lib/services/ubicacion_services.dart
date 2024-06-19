@@ -56,8 +56,7 @@ class UbicacionServices {
     );
   }
 
-  Future postUbicacion(
-      BuildContext context, Ubicacion ubicacion, String token) async {
+  Future postUbicacion(BuildContext context, Ubicacion ubicacion, String token) async {
     try {
       String link = '${apiUrl}api/v1/ubicaciones';
       var headers = {'Authorization': token};
@@ -80,7 +79,9 @@ class UbicacionServices {
           if (responseData != null) {
             if(e.response!.statusCode == 403){
               showErrorDialog(context, 'Error: ${e.response!.data['message']}');
-            }else{
+            }else if(e.response!.statusCode == 500){
+              showErrorDialog(context, 'Error: No se pudo completar la solicitud');
+            } else{
               final errors = responseData['errors'] as List<dynamic>;
               final errorMessages = errors.map((error) {
                 return "Error: ${error['message']}";

@@ -65,11 +65,11 @@ class _PlagasPageState extends State<PlagasPage> {
 
   cargarDatos() async {
     token = context.read<OrdenProvider>().token;
-    plagas = await PlagaServices().getPlagas(token);
+    plagas = await PlagaServices().getPlagas(context, token);
     orden = context.read<OrdenProvider>().orden;
     marcaId = context.read<OrdenProvider>().marcaId;
     if(orden.otRevisionId != 0) {
-      revisionPlagasList = await RevisionServices().getRevisionPlagas(orden, token);
+      revisionPlagasList = await RevisionServices().getRevisionPlagas(context, orden, token);
     }
     setState(() {});
   }
