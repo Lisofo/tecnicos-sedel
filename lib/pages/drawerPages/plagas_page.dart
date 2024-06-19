@@ -50,9 +50,11 @@ class _PlagasPageState extends State<PlagasPage> {
   late List<RevisionPlaga> revisionPlagasList = [];
   bool isReadOnly = true;
   late int marcaId = 0;
+  bool cargoDatosCorrectamente = false;
+  bool cargando = true;
 
   @override
-  void initState() {
+  void initState(){
     super.initState();
     cargarDatos();
   }
@@ -62,14 +64,21 @@ class _PlagasPageState extends State<PlagasPage> {
     _scrollController.dispose();
     super.dispose();
   }
-
-  cargarDatos() async {
+   cargarDatos() async {
     token = context.read<OrdenProvider>().token;
-    plagas = await PlagaServices().getPlagas(context, token);
-    orden = context.read<OrdenProvider>().orden;
-    marcaId = context.read<OrdenProvider>().marcaId;
-    if(orden.otRevisionId != 0) {
-      revisionPlagasList = await RevisionServices().getRevisionPlagas(context, orden, token);
+    try {
+      plagas = await PlagaServices().getPlagas(context, token);
+      orden = context.read<OrdenProvider>().orden;
+      marcaId = context.read<OrdenProvider>().marcaId;
+      if(orden.otRevisionId != 0) {
+        revisionPlagasList = await RevisionServices().getRevisionPlagas(context, orden, token);
+      }
+      if (plagas.isNotEmpty){
+        cargoDatosCorrectamente = true;
+      }
+      cargando = false;
+    }catch (e) {
+      cargando = false;
     }
     setState(() {});
   }
@@ -85,7 +94,26 @@ class _PlagasPageState extends State<PlagasPage> {
           style: const TextStyle(color: Colors.white),
         ),
       ),
-      body: Padding(
+      body: cargando ? const Center(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.center,
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            CircularProgressIndicator(),
+            Text('Cargando, por favor espere...')
+          ],
+        ),
+      ) : !cargoDatosCorrectamente ? 
+      Center(
+        child: TextButton.icon(
+          onPressed: () async {
+            await cargarDatos();
+          }, 
+          icon: const Icon(Icons.replay_outlined),
+          label: const Text('Recargar'),
+        ),
+      ) :
+      Padding(
         padding: const EdgeInsets.all(8.0),
         child: Column(
           children: [
