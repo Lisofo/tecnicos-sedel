@@ -219,7 +219,7 @@ class _EntradSalidaState extends State<EntradSalida> {
                   onPressed: () {
                     Navigator.of(context).pop(false);
                   },
-                  child: const Text('Cerrar'),
+                  child: const Text('Cancelar'),
                 ),
                 TextButton(
                   onPressed: () {
@@ -241,7 +241,7 @@ class _EntradSalidaState extends State<EntradSalida> {
           Provider.of<OrdenProvider>(context, listen: false).setMarca(0);
           _borrarIdLocal();
           setState(() {});
-        } else {
+        } else if(ordenesEnProceso.isNotEmpty){
           showDialog(
             context: context,
             builder: (context) {
@@ -254,7 +254,7 @@ class _EntradSalidaState extends State<EntradSalida> {
                     onPressed: () {
                       Navigator.of(context).pop();
                     },
-                    child: const Text('Cerrar')
+                    child: const Text('OK')
                   )
                 ],
               );

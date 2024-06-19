@@ -76,7 +76,6 @@ class _OrdenInternaState extends State<OrdenInterna> {
 
   @override
   Widget build(BuildContext context) {
-    print('dibuje orden');
     final colors = Theme.of(context).colorScheme;
     return SafeArea(
       child: Scaffold(
@@ -301,9 +300,7 @@ class _OrdenInternaState extends State<OrdenInterna> {
             children: [
               CustomButton(
                 clip: Clip.antiAlias,
-                onPressed: marcaId != 0 && orden.estado != 'EN PROCESO'
-                    ? () => _mostrarDialogoConfirmacion('iniciar')
-                    : null,
+                onPressed: marcaId != 0 && orden.estado != 'EN PROCESO' ? () => _mostrarDialogoConfirmacion('iniciar') : null,
                 text: 'Iniciar',
                 tamano: 18,
                 disabled: !(marcaId != 0 && orden.estado == 'PENDIENTE'),
@@ -425,7 +422,7 @@ class _OrdenInternaState extends State<OrdenInterna> {
           actions: [
             TextButton(
               onPressed: () => GoRouter.of(context).pop(),
-              child: const Text('Cerrar')
+              child: const Text('Cancelar')
             ),
             TextButton(
               onPressed: () async {

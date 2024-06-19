@@ -28,6 +28,7 @@ class _TareasPageState extends State<TareasPage> {
   late List<RevisionTarea> revisionTareasList = [];
   late int marcaId = 0;
   bool isReadOnly = true;
+  
 
   @override
   void initState() {
@@ -200,8 +201,7 @@ class _TareasPageState extends State<TareasPage> {
                                       return AlertDialog(
                                         surfaceTintColor: Colors.white,
                                         title: const Text("Confirmar"),
-                                        content: const Text(
-                                            "¿Estas seguro de querer borrar la tarea?"),
+                                        content: const Text("¿Estas seguro de querer borrar la tarea?"),
                                         actions: <Widget>[
                                           TextButton(
                                             onPressed: () => Navigator.of(context).pop(false),
@@ -252,8 +252,7 @@ class _TareasPageState extends State<TareasPage> {
         codTarea: selectedTarea.codTarea,
         descripcion: selectedTarea.descripcion,
         comentario: '');
-    await RevisionServices().postRevisionTarea(
-        context, orden, selectedTarea.tareaId, nuevaTarea, token);
+    await RevisionServices().postRevisionTarea(context, orden, selectedTarea.tareaId, nuevaTarea, token);
     revisionTareasList.add(nuevaTarea);
     _scrollController.animateTo(
       _scrollController.position.maxScrollExtent + 200,

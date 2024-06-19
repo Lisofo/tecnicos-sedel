@@ -24,7 +24,7 @@ class OrdenControlServices{
               onPressed: () {
                 Navigator.of(context).pop();
               },
-              child: const Text('Cerrar'),
+              child: const Text('OK'),
             ),
           ],
         );
@@ -51,7 +51,7 @@ class OrdenControlServices{
                   Navigator.of(context).pop();
                 }
               },
-              child: const Text('Cerrar'),
+              child: const Text('OK'),
             ),
           ],
         );

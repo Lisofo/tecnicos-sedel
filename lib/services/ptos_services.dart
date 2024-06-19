@@ -39,7 +39,7 @@ class PtosInspeccionServices {
                   Navigator.of(context).pop();
                 }
               },
-              child: const Text('Cerrar'),
+              child: const Text('OK'),
             ),
           ],
         );

@@ -42,6 +42,8 @@ class _MaterialesPageState extends State<MaterialesPage> {
   final ScrollController _scrollController = ScrollController();
   late int marcaId = 0;
   late List<ManualesMateriales> manuales = [];
+  bool estaBuscando = false;
+  bool borrando = false;
 
   @override
   void initState() {
@@ -60,7 +62,7 @@ class _MaterialesPageState extends State<MaterialesPage> {
     setState(() {});
   }
 
-  void _showMaterialDetails(BuildContext context, Materiales material) async {
+  Future<bool> _showMaterialDetails(BuildContext context, Materiales material) async {
     plagas = await PlagaServices().getPlagas(token);
     lotes = await MaterialesServices().getLotes(selectedMaterial.materialId, token);
     metodosAplicacion = await MaterialesServices().getMetodosAplicacion(token);
@@ -210,6 +212,7 @@ class _MaterialesPageState extends State<MaterialesPage> {
         );
       },
     );
+    return false;
   }
 
   @override
@@ -242,10 +245,11 @@ class _MaterialesPageState extends State<MaterialesPage> {
                   borderRadius: BorderRadius.circular(5)
                 ),
                 child: DropdownSearch(
+                  enabled: !estaBuscando,
                   dropdownDecoratorProps: const DropDownDecoratorProps(
                     textAlignVertical: TextAlignVertical.center,
                     dropdownSearchDecoration: InputDecoration(
-                      hintText: 'Seleccione un material'
+                      hintText: 'Seleccione un material',
                     )
                   ),
                   items: materiales,
@@ -261,7 +265,11 @@ class _MaterialesPageState extends State<MaterialesPage> {
                     }
                     setState(() {
                       selectedMaterial = newValue!;
-                      _showMaterialDetails(context, selectedMaterial);
+                      estaBuscando = true;
+                    });
+                    bool resultado = await _showMaterialDetails(context, selectedMaterial);
+                    setState(() {
+                      estaBuscando = resultado;
                     });
                   },
                 )
@@ -358,15 +366,25 @@ class _MaterialesPageState extends State<MaterialesPage> {
                                   mainAxisSize: MainAxisSize.min,
                                   children: [
                                     IconButton(
-                                      onPressed: () async {
-                                        if(marcaId == 0 || (orden.estado == 'PENDIENTE' || orden.estado == 'FINALIZADA')){
-                                          ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-                                            content: Text('No puede de ingresar o editar datos.'),
-                                          ));
-                                          return Future.value(false);
-                                        }
-                                        await editMaterial(context, item);
-                                      }, 
+                                      onPressed: !estaBuscando
+                                        ? () async {
+                                            if (marcaId == 0 || (orden.estado == 'PENDIENTE' || orden.estado == 'FINALIZADA')) {
+                                              ScaffoldMessenger.of(context).showSnackBar(
+                                                const SnackBar(
+                                                  content: Text('No puede ingresar o editar datos.'),
+                                                ),
+                                              );
+                                              return Future.value(false);
+                                            }
+                                            setState(() {
+                                              estaBuscando = true;
+                                            });
+                                            bool resultado = await editMaterial(context, item);
+                                            setState(() {
+                                              estaBuscando = resultado;
+                                            });
+                                          }
+                                        : null,
                                       icon: const Icon(Icons.edit)
                                     ),
                                     IconButton(
@@ -439,10 +457,14 @@ class _MaterialesPageState extends State<MaterialesPage> {
                 foregroundColor: Colors.red,
               ),
               onPressed: () async {
-                await MaterialesServices().deleteRevisionMaterial(context,orden,revisionMaterialesList[i],token);
-                setState(() {
-                  revisionMaterialesList.removeAt(i);
-                });
+                if(!borrando){
+                  borrando = true;
+                  await MaterialesServices().deleteRevisionMaterial(context,orden,revisionMaterialesList[i],token);
+                  setState(() {
+                    revisionMaterialesList.removeAt(i);
+                  });
+                  borrando = false;
+                }
               },
               child: const Text("BORRAR")
             ),
@@ -519,7 +541,7 @@ class _MaterialesPageState extends State<MaterialesPage> {
     }
   }
 
-  editMaterial(BuildContext context, RevisionMaterial material) async {
+  Future <bool> editMaterial(BuildContext context, RevisionMaterial material) async {
     final TextEditingController ubicacionController = TextEditingController();
     final TextEditingController areaController = TextEditingController();
     final TextEditingController cantidadController = TextEditingController();
@@ -599,7 +621,6 @@ class _MaterialesPageState extends State<MaterialesPage> {
                   itemAsString: (Plaga p) => p.descripcion,
                   compareFn: (Plaga p1, Plaga p2) => p1.plagaId == p2.plagaId,
                   popupProps: const PopupPropsMultiSelection.menu(
-                    
                     showSelectedItems: true,
                   ),
                   onChanged: (value) {
@@ -688,5 +709,6 @@ class _MaterialesPageState extends State<MaterialesPage> {
         );
       },
     );
+    return false;
   }
 }

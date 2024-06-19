@@ -52,7 +52,7 @@ class OrdenServices {
             onPressed: () {
               Navigator.of(context).pop();
             },
-            child: const Text('Cerrar'),
+            child: const Text('OK'),
           ),
         ],
       ),

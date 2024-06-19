@@ -479,8 +479,10 @@ class _PtosInspeccionPageState extends State<PtosInspeccionPage> {
         }
         router.push(botones.ruta);
       break;
-      case 'Desinstalado':
       case 'Sin Actividad':
+        marcarPISinActividad(1, '');
+      break;
+      case 'Desinstalado':
       case 'Sin Acceso':
         showDialog(
           context: context,
@@ -519,9 +521,7 @@ class _PtosInspeccionPageState extends State<PtosInspeccionPage> {
                     if(!subiendoAcciones){
                       subiendoAcciones = true;
                       router.pop(context);
-                      if (botones.text == 'Sin Actividad') {
-                        marcarPISinActividad(1, comentarioController.text);
-                      } else if (botones.text == 'Desinstalado') {
+                      if (botones.text == 'Desinstalado') {
                         marcarPISinActividad(4, comentarioController.text);
                       } else {
                         marcarPISinActividad(7, comentarioController.text);
@@ -855,7 +855,7 @@ class _PtosInspeccionPageState extends State<PtosInspeccionPage> {
               onPressed: () {
                 Navigator.of(context).pop();
               },
-              child: const Text('Cerrar'),
+              child: const Text('Cancelar'),
             ),
             TextButton(
               onPressed: () async {

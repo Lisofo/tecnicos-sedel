@@ -39,6 +39,8 @@ class _MaterialesDiagnosticoPageState extends State<MaterialesDiagnosticoPage> {
   final TextEditingController comentarioController = TextEditingController();
   final TextEditingController cantidadController = TextEditingController();
   late List<ManualesMateriales> manuales = [];
+  bool estaBuscando = false;
+  bool borrando = false;
 
   @override
   void initState() {
@@ -55,7 +57,7 @@ class _MaterialesDiagnosticoPageState extends State<MaterialesDiagnosticoPage> {
     setState(() {});
   }
 
-  void _showMaterialDetails(BuildContext context, Materiales material) async {
+  Future<bool> _showMaterialDetails(BuildContext context, Materiales material) async {
     comentarioController.text = '';
 
     showDialog(
@@ -131,14 +133,14 @@ class _MaterialesDiagnosticoPageState extends State<MaterialesDiagnosticoPage> {
         );
       },
     );
+    return false;
   }
 
   @override
   Widget build(BuildContext context) {
     final colors = Theme.of(context).colorScheme;
     if (selectedMaterial.materialId != 0 && materiales.isNotEmpty) {
-      materialInicial = materiales.firstWhere(
-          (material) => material.materialId == selectedMaterial.materialId);
+      materialInicial = materiales.firstWhere((material) => material.materialId == selectedMaterial.materialId);
     }
 
     return SafeArea(
@@ -163,6 +165,7 @@ class _MaterialesDiagnosticoPageState extends State<MaterialesDiagnosticoPage> {
                         color: colors.primary),
                     borderRadius: BorderRadius.circular(5)),
                 child: DropdownSearch(
+                  enabled: !estaBuscando,
                   dropdownDecoratorProps: const DropDownDecoratorProps(
                     textAlignVertical: TextAlignVertical.center,
                     dropdownSearchDecoration: InputDecoration(
@@ -182,7 +185,11 @@ class _MaterialesDiagnosticoPageState extends State<MaterialesDiagnosticoPage> {
                     }
                     setState(() {
                       selectedMaterial = newValue!;
-                      _showMaterialDetails(context, selectedMaterial);
+                      estaBuscando = true;
+                    });
+                    bool resultado = await _showMaterialDetails(context, selectedMaterial);
+                    setState(() {
+                      estaBuscando = resultado;
                     });
                   },
                 )
@@ -240,20 +247,19 @@ class _MaterialesDiagnosticoPageState extends State<MaterialesDiagnosticoPage> {
                                         "¿Estas seguro de querer borrar el material?"),
                                     actions: <Widget>[
                                       TextButton(
-                                        onPressed: () =>
-                                            Navigator.of(context)
-                                                .pop(false),
+                                        onPressed: () => Navigator.of(context) .pop(false),
                                         child: const Text("CANCELAR"),
                                       ),
                                       TextButton(
-                                          style: TextButton.styleFrom(
-                                            foregroundColor: Colors.red,
-                                          ),
-                                          onPressed: () async {
-                                            Navigator.of(context).pop(true);
-                                            await MaterialesDiagnosticoServices().deleteRevisionMaterial(context, orden,revisionMaterialesList[i],token);
-                                          },
-                                          child: const Text("BORRAR")),
+                                        style: TextButton.styleFrom(
+                                          foregroundColor: Colors.red,
+                                        ),
+                                        onPressed: () async {
+                                          Navigator.of(context).pop(true);
+                                          await MaterialesDiagnosticoServices().deleteRevisionMaterial(context, orden,revisionMaterialesList[i],token);
+                                        },
+                                        child: const Text("BORRAR")
+                                      ),
                                     ],
                                   );
                                 },
@@ -284,15 +290,25 @@ class _MaterialesDiagnosticoPageState extends State<MaterialesDiagnosticoPage> {
                                   mainAxisSize: MainAxisSize.min,
                                   children: [
                                     IconButton(
-                                      onPressed: () async {
-                                        if(marcaId == 0 || (orden.estado == 'PENDIENTE' || orden.estado == 'FINALIZADA')){
-                                          ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-                                            content: Text('No puede de ingresar o editar datos.'),
-                                          ));
-                                          return Future.value(false);
-                                        }
-                                        await editMaterial(context, item);
-                                      }, 
+                                      onPressed: !estaBuscando
+                                        ? () async {
+                                            if (marcaId == 0 || (orden.estado == 'PENDIENTE' || orden.estado == 'FINALIZADA')) {
+                                              ScaffoldMessenger.of(context).showSnackBar(
+                                                const SnackBar(
+                                                  content: Text('No puede ingresar o editar datos.'),
+                                                ),
+                                              );
+                                              return Future.value(false);
+                                            }
+                                            setState(() {
+                                              estaBuscando = true;
+                                            });
+                                            bool resultado = await editMaterial(context, item);
+                                            setState(() {
+                                              estaBuscando = resultado;
+                                            });
+                                          }
+                                        : null,
                                       icon: const Icon(Icons.edit)
                                     ),
                                     IconButton(
@@ -319,7 +335,11 @@ class _MaterialesDiagnosticoPageState extends State<MaterialesDiagnosticoPage> {
                                                 TextButton(
                                                   style: TextButton.styleFrom(foregroundColor:Colors.red,),
                                                   onPressed: () async {
-                                                    await borrarMaterial(context, item, i);
+                                                    if(!borrando){
+                                                      borrando = true;
+                                                      await borrarMaterial(context, item, i);
+                                                      borrando = false;
+                                                    }
                                                   },
                                                   child: const Text("BORRAR")
                                                 ),
@@ -444,7 +464,7 @@ class _MaterialesDiagnosticoPageState extends State<MaterialesDiagnosticoPage> {
     }
   }
 
-  editMaterial(BuildContext context, RevisionMaterial material) async {
+  Future<bool> editMaterial(BuildContext context, RevisionMaterial material) async {
     if(material.otMaterialId != 0){
       comentarioController.text = material.comentario;
       cantidadController.text = material.cantidad.toString();
@@ -532,5 +552,6 @@ class _MaterialesDiagnosticoPageState extends State<MaterialesDiagnosticoPage> {
         );
       },
     );
+    return false;
   }
 }
