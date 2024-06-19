@@ -21,6 +21,8 @@ class _ValidacionPageState extends State<ValidacionPage> {
   int count = 0;
   int desaprueba = 0;
   List<ControlOrden> listaGenerica = [];
+  bool cargoDatosCorrectamente = false;
+  bool cargando = true;
 
   @override
   void initState() {
@@ -30,18 +32,24 @@ class _ValidacionPageState extends State<ValidacionPage> {
 
   cargarDatos() async {
     token = context.read<OrdenProvider>().token;
-    orden = context.read<OrdenProvider>().orden;
-    controles = await OrdenControlServices().getControlOrden(context, orden, token);
-    listaGenerica = controles.where((element) => element.controlRegId == 0).toList();
-    count = listaGenerica.length;
-    if(count == 0){
-      listaGenerica = controles.where((element) => element.respuesta == 'DESAPRUEBA').toList();
-      desaprueba = listaGenerica.length;
+    try {
+      orden = context.read<OrdenProvider>().orden;
+      controles = await OrdenControlServices().getControlOrden(context, orden, token);
+      listaGenerica = controles.where((element) => element.controlRegId == 0).toList();
+      count = listaGenerica.length;
+      if(count == 0){
+        listaGenerica = controles.where((element) => element.respuesta == 'DESAPRUEBA').toList();
+        desaprueba = listaGenerica.length;
+      }
+
+      validacion = count > 0 ? 'Complete el cuestionario' : desaprueba == 0 ? 'Se valida' : 'No se valida';
+      if (controles.isNotEmpty){
+        cargoDatosCorrectamente = true;
+      }
+      cargando = false;
+    }catch (e) {
+      cargando = false;
     }
-
-    validacion = count > 0 ? 'Complete el cuestionario' : desaprueba == 0 ? 'Se valida' : 'No se valida';
-
-
     setState(() {});
   }
 
@@ -54,7 +62,25 @@ class _ValidacionPageState extends State<ValidacionPage> {
         title: const Text('Validación', style: TextStyle(color: Colors.white),),
         backgroundColor: colors.primary,
       ),
-      body: Padding(
+      body: cargando ? const Center(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.center,
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            CircularProgressIndicator(),
+            Text('Cargando, por favor espere...')
+          ],
+        ),
+      ) : !cargoDatosCorrectamente ? 
+      Center(
+        child: TextButton.icon(
+          onPressed: () async {
+            await cargarDatos();
+          }, 
+          icon: const Icon(Icons.replay_outlined),
+          label: const Text('Recargar'),
+        ),
+      ) : Padding(
         padding: const EdgeInsets.all(8.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.center,

@@ -44,6 +44,8 @@ class _MaterialesPageState extends State<MaterialesPage> {
   late List<ManualesMateriales> manuales = [];
   bool estaBuscando = false;
   bool borrando = false;
+  bool cargoDatosCorrectamente = false;
+  bool cargando = true;
 
   @override
   void initState() {
@@ -53,12 +55,21 @@ class _MaterialesPageState extends State<MaterialesPage> {
 
   cargarDatos() async {
     token = context.read<OrdenProvider>().token;
-    orden = context.read<OrdenProvider>().orden;
-    marcaId = context.read<OrdenProvider>().marcaId;
-    materiales = await MaterialesServices().getMateriales(context, token);
-    if(orden.otRevisionId != 0) {
-      revisionMaterialesList = await MaterialesServices().getRevisionMateriales(context, orden, token);
+    try {
+      orden = context.read<OrdenProvider>().orden;
+      marcaId = context.read<OrdenProvider>().marcaId;
+      materiales = await MaterialesServices().getMateriales(context, token);
+      if(orden.otRevisionId != 0) {
+        revisionMaterialesList = await MaterialesServices().getRevisionMateriales(context, orden, token);
+      }
+      if (materiales.isNotEmpty){
+        cargoDatosCorrectamente = true;
+      }
+      cargando = false;
+    } catch (e) {
+      cargando = false;
     }
+    
     setState(() {});
   }
 
@@ -232,7 +243,25 @@ class _MaterialesPageState extends State<MaterialesPage> {
           backgroundColor: colors.primary,
         ),
         backgroundColor: Colors.grey.shade200,
-        body: Padding(
+        body: cargando ? const Center(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                CircularProgressIndicator(),
+                Text('Cargando, por favor espere...')
+              ],
+            ),
+          ) : !cargoDatosCorrectamente ? 
+          Center(
+            child: TextButton.icon(
+              onPressed: () async {
+                await cargarDatos();
+              }, 
+              icon: const Icon(Icons.replay_outlined),
+              label: const Text('Recargar'),
+            ),
+          ) : Padding(
           padding: const EdgeInsets.all(8.0),
           child: Column(
             children: [

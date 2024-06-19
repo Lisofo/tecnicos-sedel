@@ -45,6 +45,8 @@ class _PtosInspeccionActividadState extends State<PtosInspeccionActividad> {
   List<PtoMaterial> materialesSeleccionados = [];
   bool subiendoAcciones = false;
   late RevisionPtoInspeccion nuevaRevisionPtoInspeccion = RevisionPtoInspeccion.empty();
+  bool cargoDatosCorrectamente = false;
+  bool cargando = true;
 
   @override
   void initState() {
@@ -60,27 +62,36 @@ class _PtosInspeccionActividadState extends State<PtosInspeccionActividad> {
 
   cargarDatos() async {
     token = context.read<OrdenProvider>().token;
-    orden = context.read<OrdenProvider>().orden;
-    marcaId = context.read<OrdenProvider>().marcaId;
-    final String modo = context.read<OrdenProvider>().modo;
-    tPISeleccionado = context.read<OrdenProvider>().tipoPtosInspeccion;
-    ptoInspeccionSeleccionados = context.read<OrdenProvider>().puntosSeleccionados;
-    tareas = await TareasServices().getTareasXTPI(context, tPISeleccionado, modo, token);
-    materiales = await MaterialesServices().getMaterialesXTPI(context, tPISeleccionado, token);
-    
-    if (orden.estado == "EN PROCESO" && marcaId != 0) {
-      isReadOnly = false;
-    }
-    int accion = menu == "Actividad" ? 2 : 3;
-    bool modificando = ptoInspeccionSeleccionados.length == 1 && ptoInspeccionSeleccionados[0].piAccionId == accion;
-    if (modificando) {
-      for (var tarea in tareas) {
-        tarea.selected = ptoInspeccionSeleccionados[0].tareas
-          .any((asignada) => asignada.tareaId == tarea.tareaId);
+    try {
+      orden = context.read<OrdenProvider>().orden;
+      marcaId = context.read<OrdenProvider>().marcaId;
+      final String modo = context.read<OrdenProvider>().modo;
+      tPISeleccionado = context.read<OrdenProvider>().tipoPtosInspeccion;
+      ptoInspeccionSeleccionados = context.read<OrdenProvider>().puntosSeleccionados;
+      tareas = await TareasServices().getTareasXTPI(context, tPISeleccionado, modo, token);
+      materiales = await MaterialesServices().getMaterialesXTPI(context, tPISeleccionado, token);
+
+      if (orden.estado == "EN PROCESO" && marcaId != 0) {
+        isReadOnly = false;
       }
-      materialesSeleccionados = ptoInspeccionSeleccionados[0].materiales;
-      plagasSeleccionadas = ptoInspeccionSeleccionados[0].plagas;
+      int accion = menu == "Actividad" ? 2 : 3;
+      bool modificando = ptoInspeccionSeleccionados.length == 1 && ptoInspeccionSeleccionados[0].piAccionId == accion;
+      if (modificando) {
+        for (var tarea in tareas) {
+          tarea.selected = ptoInspeccionSeleccionados[0].tareas
+            .any((asignada) => asignada.tareaId == tarea.tareaId);
+        }
+        materialesSeleccionados = ptoInspeccionSeleccionados[0].materiales;
+        plagasSeleccionadas = ptoInspeccionSeleccionados[0].plagas;
+      }
+      if (materiales.isNotEmpty && tareas.isNotEmpty){
+        cargoDatosCorrectamente = true;
+      }
+      cargando = false;
+    }catch (e) {
+      cargando = false;
     }
+    
     setState(() {});
   }
 
@@ -97,7 +108,25 @@ class _PtosInspeccionActividadState extends State<PtosInspeccionActividad> {
           backgroundColor: colors.primary,
         ),
         backgroundColor: Colors.grey.shade200,
-        body: SingleChildScrollView(
+        body: cargando ? const Center(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.center,
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            CircularProgressIndicator(),
+            Text('Cargando, por favor espere...')
+          ],
+        ),
+      ) : !cargoDatosCorrectamente ? 
+      Center(
+        child: TextButton.icon(
+          onPressed: () async {
+            await cargarDatos();
+          }, 
+          icon: const Icon(Icons.replay_outlined),
+          label: const Text('Recargar'),
+        ),
+      ) : SingleChildScrollView(
           child: Padding(
             padding: const EdgeInsets.all(8.0),
             child: Column(

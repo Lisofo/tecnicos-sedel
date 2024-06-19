@@ -27,7 +27,8 @@ class _ObservacionesPageState extends State<ObservacionesPage> {
   bool _isButtonEnabledCom = false;
   String _initialObs = '';
   String _initialCom = '';
-
+  bool cargoDatosCorrectamente = false;
+  bool cargando = true;
 
   @override
   void initState() {
@@ -50,17 +51,25 @@ class _ObservacionesPageState extends State<ObservacionesPage> {
 
 
   cargarDatos() async {
-    orden = context.read<OrdenProvider>().orden;
     token = context.read<OrdenProvider>().token;
-    marcaId = context.read<OrdenProvider>().marcaId;
-    if(orden.otRevisionId != 0){
-      observaciones = await RevisionServices().getObservacion(context, orden, token);
-    }
-    if (observaciones.isNotEmpty) {
-      observacion = observaciones[0];
-    } else {
+    try {
+      orden = context.read<OrdenProvider>().orden;
+      marcaId = context.read<OrdenProvider>().marcaId;
+      if(orden.otRevisionId != 0){
+        observaciones = await RevisionServices().getObservacion(context, orden, token);
+      }
+      if (observaciones.isNotEmpty) {
+        observacion = observaciones[0];
+        cargoDatosCorrectamente = true;
+      } else {
+        observacion = Observacion.empty();
+      }
+      cargando = false;
+    } catch (e) {
       observacion = Observacion.empty();
+      cargando = false;
     }
+    
     print(observacion.otObservacionId);
     setState(() {
       observacionController.text = observacion.observacion;
@@ -85,7 +94,25 @@ class _ObservacionesPageState extends State<ObservacionesPage> {
         ),
         backgroundColor: colors.primary,
       ),
-      body: Stack(
+      body: cargando ? const Center(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.center,
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            CircularProgressIndicator(),
+            Text('Cargando, por favor espere...')
+          ],
+        ),
+        ) : !cargoDatosCorrectamente ? 
+        Center(
+          child: TextButton.icon(
+            onPressed: () async {
+              await cargarDatos();
+            }, 
+            icon: const Icon(Icons.replay_outlined),
+            label: const Text('Recargar'),
+          ),
+        ) : Stack(
         children: [
           SingleChildScrollView(
             child: Padding(

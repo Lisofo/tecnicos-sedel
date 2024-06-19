@@ -28,7 +28,8 @@ class _TareasPageState extends State<TareasPage> {
   late List<RevisionTarea> revisionTareasList = [];
   late int marcaId = 0;
   bool isReadOnly = true;
-  
+  bool cargoDatosCorrectamente = false;
+  bool cargando = true;
 
   @override
   void initState() {
@@ -44,12 +45,21 @@ class _TareasPageState extends State<TareasPage> {
 
   cargarDatos() async {
     token = context.read<OrdenProvider>().token;
-    tareas = await TareasServices().getTareas(context, token);
-    orden = context.read<OrdenProvider>().orden;
-    marcaId = context.read<OrdenProvider>().marcaId;
-    if(orden.otRevisionId != 0){
-      revisionTareasList = await RevisionServices().getRevisionTareas(context, orden, token);
+    try {
+      tareas = await TareasServices().getTareas(context, token);
+      orden = context.read<OrdenProvider>().orden;
+      marcaId = context.read<OrdenProvider>().marcaId;
+      if(orden.otRevisionId != 0){
+        revisionTareasList = await RevisionServices().getRevisionTareas(context, orden, token);
+      }
+      if (tareas.isNotEmpty){
+        cargoDatosCorrectamente = true;
+      }
+      cargando = false;
+    } catch (e) {
+      cargando = false;
     }
+    
     setState(() {});
   }
 
@@ -64,7 +74,25 @@ class _TareasPageState extends State<TareasPage> {
           style: const TextStyle(color: Colors.white),
         ),
       ),
-      body: SingleChildScrollView(
+      body:cargando ? const Center(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.center,
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            CircularProgressIndicator(),
+            Text('Cargando, por favor espere...')
+          ],
+        ),
+        ) : !cargoDatosCorrectamente ? 
+        Center(
+          child: TextButton.icon(
+            onPressed: () async {
+              await cargarDatos();
+            }, 
+            icon: const Icon(Icons.replay_outlined),
+            label: const Text('Recargar'),
+          ),
+        ) : SingleChildScrollView(
         child: Padding(
           padding: const EdgeInsets.all(8.0),
           child: Column(

@@ -45,6 +45,8 @@ class _PtosInspeccionPageState extends State<PtosInspeccionPage> {
   final GlobalKey<RefreshIndicatorState> _refreshIndicatorKey = GlobalKey<RefreshIndicatorState>();
   bool subiendoAcciones = false;
   String _searchTerm = '';
+  bool cargoDatosCorrectamente = false;
+  bool cargando = true;
 
   readQRCode() async {
     ptosInspeccion = await PtosInspeccionServices().getPtosInspeccion(context, orden, token);
@@ -85,14 +87,23 @@ class _PtosInspeccionPageState extends State<PtosInspeccionPage> {
 
   cargarDatos() async {
     token = context.read<OrdenProvider>().token;
-    orden = context.read<OrdenProvider>().orden;
-    marcaId = context.read<OrdenProvider>().marcaId;
-    if(orden.otRevisionId != 0) {
-      ptosInspeccion = await PtosInspeccionServices().getPtosInspeccion(context, orden, token);
+    try {
+      orden = context.read<OrdenProvider>().orden;
+      marcaId = context.read<OrdenProvider>().marcaId;
+      if(orden.otRevisionId != 0) {
+        ptosInspeccion = await PtosInspeccionServices().getPtosInspeccion(context, orden, token);
+      }
+      tiposDePuntos = await getTipos();
+      plagasObjetivo = await PlagaServices().getPlagasObjetivo(context, token);
+      Provider.of<OrdenProvider>(context, listen: false).setTipoPTI(selectedTipoPto);
+      if (ptosInspeccion.isNotEmpty){
+        cargoDatosCorrectamente = true;
+      }
+      cargando = false;
+    } catch (e) {
+      cargando = false;
     }
-    tiposDePuntos = await getTipos();
-    plagasObjetivo = await PlagaServices().getPlagasObjetivo(context, token);
-    Provider.of<OrdenProvider>(context, listen: false).setTipoPTI(selectedTipoPto);
+    
     setState(() {});
   }
 
@@ -169,7 +180,25 @@ class _PtosInspeccionPageState extends State<PtosInspeccionPage> {
             )
           ],
         ),
-        body: Padding(
+        body: cargando ? const Center(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.center,
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            CircularProgressIndicator(),
+            Text('Cargando, por favor espere...')
+          ],
+        ),
+      ) : !cargoDatosCorrectamente ? 
+      Center(
+        child: TextButton.icon(
+          onPressed: () async {
+            await cargarDatos();
+          }, 
+          icon: const Icon(Icons.replay_outlined),
+          label: const Text('Recargar'),
+        ),
+      ) : Padding(
           padding: const EdgeInsets.all(8.0),
           child: Column(
             children: [

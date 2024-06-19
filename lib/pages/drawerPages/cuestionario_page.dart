@@ -26,7 +26,8 @@ class _CuestionarioPageState extends State<CuestionarioPage> {
   List<String> grupos = [];
   List<ControlOrden> preguntasFiltradas = [];
   List<String> models = [];
-
+  bool cargoDatosCorrectamente = false;
+  bool cargando = true;
 
   
 
@@ -38,15 +39,22 @@ class _CuestionarioPageState extends State<CuestionarioPage> {
 
   cargarDatos() async {
     token = context.read<OrdenProvider>().token;
-    orden = context.read<OrdenProvider>().orden;
-    controles = await OrdenControlServices().getControlOrden(context, orden, token);
-    
-    for(var i = 0; i < controles.length; i++){
-      models.add(controles[i].grupo);
-    }
-    Set<String> conjunto = Set.from(models);
-    grupos = conjunto.toList();
+    try {
+      orden = context.read<OrdenProvider>().orden;
+      controles = await OrdenControlServices().getControlOrden(context, orden, token);
 
+      for(var i = 0; i < controles.length; i++){
+        models.add(controles[i].grupo);
+      }
+      Set<String> conjunto = Set.from(models);
+      grupos = conjunto.toList();
+      if (controles.isNotEmpty){
+        cargoDatosCorrectamente = true;
+      }
+      cargando = false;
+    } catch (e) {
+      cargando = false;
+    }
     setState(() {});
   }
 
@@ -60,7 +68,25 @@ class _CuestionarioPageState extends State<CuestionarioPage> {
           title: const Text('Cuestionario',style:TextStyle(color: Colors.white)),
           backgroundColor: colors.primary,
         ),
-        body: Padding(
+        body: cargando ? const Center(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+                CircularProgressIndicator(),
+                Text('Cargando, por favor espere...')
+            ],
+          ),
+        ) : !cargoDatosCorrectamente ? 
+          Center(
+            child: TextButton.icon(
+              onPressed: () async {
+                await cargarDatos();
+              }, 
+              icon: const Icon(Icons.replay_outlined),
+              label: const Text('Recargar'),
+            ),
+          ) : Padding(
           padding: const EdgeInsets.all(8.0),
           child: Column(
             children: [

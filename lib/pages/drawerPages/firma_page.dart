@@ -34,6 +34,9 @@ class _FirmaState extends State<Firma> {
   bool clienteNoDisponible = false;
   bool filtro = false;
   late String? firmaDisponible = '';
+  bool cargoDatosCorrectamente = false;
+  bool cargando = true;
+
 
   SignatureController controller = SignatureController(
     penStrokeWidth: 3,
@@ -49,18 +52,27 @@ class _FirmaState extends State<Firma> {
 
   cargarDatos() async {
     token = context.read<OrdenProvider>().token;
-    orden = context.read<OrdenProvider>().orden;
-    marcaId = context.read<OrdenProvider>().marcaId;
-    if(orden.otRevisionId != 0){
-      client = await RevisionServices().getRevisionFirmas(context, orden, token);
-      firmaDisponible = await RevisionServices().getRevision(context, orden, token);
+    try {
+      orden = context.read<OrdenProvider>().orden;
+      marcaId = context.read<OrdenProvider>().marcaId;
+      if(orden.otRevisionId != 0){
+        client = await RevisionServices().getRevisionFirmas(context, orden, token);
+        firmaDisponible = await RevisionServices().getRevision(context, orden, token);
+      }
+      print(firmaDisponible);
+      if(firmaDisponible == 'N'){
+        clienteNoDisponible = true;
+        filtro = true;
+        controller.disabled = !controller.disabled;
+      }
+      if (client.isNotEmpty){
+        cargoDatosCorrectamente = true;
+      }
+      cargando = false;
+    } catch (e) {
+      cargando = false;
     }
-    print(firmaDisponible);
-    if(firmaDisponible == 'N'){
-      clienteNoDisponible = true;
-      filtro = true;
-      controller.disabled = !controller.disabled;
-    }
+    
     setState(() {});
   }
 
@@ -77,7 +89,25 @@ class _FirmaState extends State<Firma> {
             style: const TextStyle(color: Colors.white),
           ),
         ),
-        body: SingleChildScrollView(
+        body: cargando ? const Center(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.center,
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            CircularProgressIndicator(),
+            Text('Cargando, por favor espere...')
+          ],
+        ),
+      ) : !cargoDatosCorrectamente ? 
+      Center(
+        child: TextButton.icon(
+          onPressed: () async {
+            await cargarDatos();
+          }, 
+          icon: const Icon(Icons.replay_outlined),
+          label: const Text('Recargar'),
+        ),
+      ) : SingleChildScrollView(
           child: Column(
             children: [
               const SizedBox(height: 20,),
