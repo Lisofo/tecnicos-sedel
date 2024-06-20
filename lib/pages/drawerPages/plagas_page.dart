@@ -52,6 +52,7 @@ class _PlagasPageState extends State<PlagasPage> {
   late int marcaId = 0;
   bool cargoDatosCorrectamente = false;
   bool cargando = true;
+  bool agregandoPlaga = false;
 
   @override
   void initState(){
@@ -170,11 +171,14 @@ class _PlagasPageState extends State<PlagasPage> {
               mainAxisAlignment: MainAxisAlignment.end,
               children: [
                 CustomButton(
-                  onPressed: () async {
+                  onPressed: !agregandoPlaga ? () async {
+                    agregandoPlaga = true;
+                    setState(() {});
                     if(marcaId == 0 || (orden.estado == 'PENDIENTE' || orden.estado == 'FINALIZADA')){
                       ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
                         content: Text('No puede de ingresar o editar datos.'),
                       ));
+                      agregandoPlaga = false;
                       return Future.value(false);
                     }
                     if(selectedGrado.gradoInfestacionId != 0){
@@ -190,9 +194,13 @@ class _PlagasPageState extends State<PlagasPage> {
                       ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
                         content: Text('Seleccione un grado de infestación'),
                       ));
+                      agregandoPlaga = false;
                       return Future.value(false);
+                      
                     }
-                  },
+                    agregandoPlaga = false;
+                  }: null,
+                  disabled: agregandoPlaga,
                   text: 'Agregar +',
                   tamano: 20,
                 ),

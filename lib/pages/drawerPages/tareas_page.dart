@@ -30,6 +30,7 @@ class _TareasPageState extends State<TareasPage> {
   bool isReadOnly = true;
   bool cargoDatosCorrectamente = false;
   bool cargando = true;
+  bool agregandoTarea = false;
 
   @override
   void initState() {
@@ -125,11 +126,14 @@ class _TareasPageState extends State<TareasPage> {
                 mainAxisAlignment: MainAxisAlignment.end,
                 children: [
                   CustomButton(
-                    onPressed: () async {
+                    onPressed: !agregandoTarea ? () async {
+                      agregandoTarea = true;
+                      setState(() {});
                       if(marcaId == 0 || (orden.estado == 'PENDIENTE' || orden.estado == 'FINALIZADA')){
                         ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
                           content: Text('No puede de ingresar o editar datos.'),
                         ));
+                        agregandoTarea = false;
                         return Future.value(false);
                       }
                       bool agregarTarea = true;
@@ -139,8 +143,17 @@ class _TareasPageState extends State<TareasPage> {
                       if (agregarTarea) {
                         await posteoRevisionTarea(context);
                         setState(() {});
+                      }else {
+                        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+                          content: Text('Seleccione una tarea'),
+                        ));
+                        agregarTarea = false;
+                        return Future.value(false);
                       }
-                    },
+                      agregarTarea = false;
+                      setState(() {});
+                    } : null ,
+                    disabled: agregandoTarea,
                     text: 'Agregar +',
                     tamano: 20,
                   ),

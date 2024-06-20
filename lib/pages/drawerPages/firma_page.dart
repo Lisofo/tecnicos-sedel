@@ -36,6 +36,7 @@ class _FirmaState extends State<Firma> {
   late String? firmaDisponible = '';
   bool cargoDatosCorrectamente = false;
   bool cargando = true;
+  int contadorDeVeces = 0;
 
 
   SignatureController controller = SignatureController(
@@ -58,6 +59,7 @@ class _FirmaState extends State<Firma> {
       if(orden.otRevisionId != 0){
         client = await RevisionServices().getRevisionFirmas(context, orden, token);
         firmaDisponible = await RevisionServices().getRevision(context, orden, token);
+        contadorDeVeces++;
       }
       print(firmaDisponible);
       if(firmaDisponible == 'N'){
@@ -65,7 +67,10 @@ class _FirmaState extends State<Firma> {
         filtro = true;
         controller.disabled = !controller.disabled;
       }
-      if (client.isNotEmpty){
+      if (contadorDeVeces > 1 && client.isNotEmpty){ //toDo && firmaDisponible != ''
+        cargoDatosCorrectamente = true;
+      }
+      else if (contadorDeVeces == 1){
         cargoDatosCorrectamente = true;
       }
       cargando = false;

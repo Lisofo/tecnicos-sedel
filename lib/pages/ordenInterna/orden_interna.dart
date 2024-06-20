@@ -31,6 +31,7 @@ class _OrdenInternaState extends State<OrdenInterna> {
   late Ubicacion ubicacion = Ubicacion.empty();
   bool ejecutando = false;
   String token = '';
+  
 
   @override
   void initState() {
@@ -300,10 +301,10 @@ class _OrdenInternaState extends State<OrdenInterna> {
             children: [
               CustomButton(
                 clip: Clip.antiAlias,
-                onPressed: marcaId != 0 && orden.estado != 'EN PROCESO' ? () => _mostrarDialogoConfirmacion('iniciar') : null,
+                onPressed: ((marcaId != 0 && orden.estado != 'EN PROCESO') || !ejecutando ) ? () => _mostrarDialogoConfirmacion('iniciar') : null,
                 text: 'Iniciar',
                 tamano: 18,
-                disabled: !(marcaId != 0 && orden.estado == 'PENDIENTE'),
+                disabled: (!(marcaId != 0 && orden.estado == 'PENDIENTE') || ejecutando),
               ),
               CustomButton(
                 clip: Clip.antiAlias,
