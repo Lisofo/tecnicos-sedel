@@ -387,8 +387,7 @@ class _PtosInspeccionPageState extends State<PtosInspeccionPage> {
             ),
             onTap: () {
               if (puntoDeInspeccion.seleccionado) {
-                // Provider.of<OrdenProvider>(context, listen: false)
-                //     .setPI(puntosSeleccionados);
+                // Provider.of<OrdenProvider>(context, listen: false).setPI(puntosSeleccionados);
               } else {
                 Provider.of<OrdenProvider>(context, listen: false).setRevisionPI(puntoDeInspeccion);
               }
