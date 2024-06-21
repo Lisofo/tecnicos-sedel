@@ -10,9 +10,9 @@ import 'package:provider/provider.dart';
 class MarcasServices {
   String apiUrl = Config.APIURL;
   final _dio = Dio();
+  int? statusCode;
 
-  static Future<void> showDialogs(BuildContext context, String errorMessage,
-      bool doblePop, bool triplePop) async {
+  static Future<void> showDialogs(BuildContext context, String errorMessage, bool doblePop, bool triplePop) async {
     showDialog(
       context: context,
       builder: (context) {
@@ -58,14 +58,27 @@ class MarcasServices {
     );
   }
 
+  Future<int?> getStatusCode() async {
+    statusCode = null;
+    return statusCode;
+  }
+
   Future postMarca(BuildContext context, Marca marca, String token) async {
     try {
       String link = '${apiUrl}api/v1/marcas';
       var headers = {'Authorization': token};
       var xx = marca.toMap();
-      final resp = await _dio.request(link,
-          data: xx, options: Options(method: 'POST', headers: headers));
-
+      final resp = await _dio.request(
+        link,
+        data: xx, 
+        options: 
+        Options(
+          method: 'POST', 
+          headers: headers
+        )
+      );
+      
+      statusCode = 1;
       marca.marcaId = resp.data['marcaId'];
 
       if (resp.statusCode == 201) {
@@ -77,22 +90,27 @@ class MarcasServices {
 
       return;
     } catch (e) {
+      statusCode = 0;
       if (e is DioException) {
         if (e.response != null) {
           final responseData = e.response!.data;
           if (responseData != null) {
             if(e.response!.statusCode == 403){
               showErrorDialog(context, 'Error: ${e.response!.data['message']}');
-            }else{
+            }else if(e.response!.statusCode! >= 500) {
+              showErrorDialog(context, 'Error: No se pudo completar la solicitud');
+            } else{
               final errors = responseData['errors'] as List<dynamic>;
               final errorMessages = errors.map((error) {
-              return "Error: ${error['message']}";
-            }).toList();
-            showErrorDialog(context, errorMessages.join('\n'));
-          }
+                return "Error: ${error['message']}";
+              }).toList();
+              showErrorDialog(context, errorMessages.join('\n'));
+            }
           } else {
             showErrorDialog(context, 'Error: ${e.response!.data}');
           }
+        } else {
+          showErrorDialog(context, 'Error: No se pudo completar la solicitud');
         } 
       } 
     }
@@ -103,12 +121,17 @@ class MarcasServices {
       String link = '${apiUrl}api/v1/marcas/${marca.marcaId.toString()}';
       var headers = {'Authorization': token};
       var xx = marca.toMap();
-      final resp = await _dio.request(link,
-          data: xx, options: Options(method: 'PUT', headers: headers));
-
+      final resp = await _dio.request(
+        link,
+        data: xx, 
+        options: Options(
+          method: 'PUT',
+          headers: headers
+        )
+      );
+      statusCode = 1;
       if (resp.statusCode == 200) {
-        showDialogs(context,
-            'Marcó salida correctamente, que tenga un buen dia', false, false);
+        showDialogs(context, 'Marcó salida correctamente, que tenga un buen dia', false, false);
         print('funciono marcar salida');
       } else {
         showErrorDialog(context, 'Hubo un error al momento de marcar entrada');
@@ -116,22 +139,27 @@ class MarcasServices {
 
       return;
     } catch (e) {
+      statusCode = 0;
       if (e is DioException) {
         if (e.response != null) {
           final responseData = e.response!.data;
           if (responseData != null) {
             if(e.response!.statusCode == 403){
               showErrorDialog(context, 'Error: ${e.response!.data['message']}');
-            }else{
+            }else if(e.response!.statusCode! >= 500) {
+              showErrorDialog(context, 'Error: No se pudo completar la solicitud');
+            } else{
               final errors = responseData['errors'] as List<dynamic>;
               final errorMessages = errors.map((error) {
-              return "Error: ${error['message']}";
-            }).toList();
-            showErrorDialog(context, errorMessages.join('\n'));
-          }
+                return "Error: ${error['message']}";
+              }).toList();
+              showErrorDialog(context, errorMessages.join('\n'));
+            }
           } else {
             showErrorDialog(context, 'Error: ${e.response!.data}');
           }
+        } else {
+          showErrorDialog(context, 'Error: No se pudo completar la solicitud');
         } 
       } 
     }
@@ -146,9 +174,11 @@ class MarcasServices {
         options: Options(
           method: 'GET',
           headers: headers,
+
         ),
       );
 
+      statusCode = 1;
       late Marca marca;
       if(resp.data == null) {
         marca = Marca.empty();
@@ -163,6 +193,7 @@ class MarcasServices {
       return marca;
 
     } catch (e) {
+      statusCode = 0;
       if (e is DioException) {
         if (e.response != null) {
           final responseData = e.response!.data;

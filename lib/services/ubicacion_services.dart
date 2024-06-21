@@ -8,6 +8,7 @@ import 'package:app_tec_sedel/models/ubicacion.dart';
 class UbicacionServices {
   String apiUrl = Config.APIURL;
   final _dio = Dio();
+  int? statusCode;
 
   static Future<void> showDialogs(BuildContext context, String errorMessage,
       bool doblePop, bool triplePop) async {
@@ -61,9 +62,15 @@ class UbicacionServices {
       String link = '${apiUrl}api/v1/ubicaciones';
       var headers = {'Authorization': token};
       var xx = ubicacion.toMap();
-      final resp = await _dio.request(link,
-          data: xx, options: Options(method: 'POST', headers: headers));
-
+      final resp = await _dio.request(
+        link,
+        data: xx, 
+        options: Options(
+          method: 'POST', 
+          headers: headers
+        )
+      );
+      statusCode = 1;
       ubicacion.ubicacionId = resp.data['ubicacionId'];
 
       if (resp.statusCode == 201) {
@@ -73,13 +80,14 @@ class UbicacionServices {
 
       return;
     } catch (e) {
+      statusCode = 0;
       if (e is DioException) {
         if (e.response != null) {
           final responseData = e.response!.data;
           if (responseData != null) {
             if(e.response!.statusCode == 403){
               showErrorDialog(context, 'Error: ${e.response!.data['message']}');
-            }else if(e.response!.statusCode! >= 500){
+            }else if(e.response!.statusCode! >= 500) {
               showErrorDialog(context, 'Error: No se pudo completar la solicitud');
             } else{
               final errors = responseData['errors'] as List<dynamic>;
@@ -91,6 +99,8 @@ class UbicacionServices {
           } else {
             showErrorDialog(context, 'Error: ${e.response!.data}');
           }
+        } else {
+          showErrorDialog(context, 'Error: No se pudo completar la solicitud');
         } 
       } 
     }

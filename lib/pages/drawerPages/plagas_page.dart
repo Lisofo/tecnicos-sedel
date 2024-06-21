@@ -21,7 +21,8 @@ class PlagasPage extends StatefulWidget {
 
 class _PlagasPageState extends State<PlagasPage> {
   List<Plaga> plagas = [];
-
+  final _revisionServices = RevisionServices();
+  final _plagaServices = PlagaServices();
   List<GradoInfestacion> gradoInfeccion = [
     GradoInfestacion(
         gradoInfestacionId: 1,
@@ -53,6 +54,8 @@ class _PlagasPageState extends State<PlagasPage> {
   bool cargoDatosCorrectamente = false;
   bool cargando = true;
   bool agregandoPlaga = false;
+  int? statusCodeRevision;
+  bool borrando = false;
 
   @override
   void initState(){
@@ -68,11 +71,11 @@ class _PlagasPageState extends State<PlagasPage> {
    cargarDatos() async {
     token = context.read<OrdenProvider>().token;
     try {
-      plagas = await PlagaServices().getPlagas(context, token);
+      plagas = await _plagaServices.getPlagas(context, token);
       orden = context.read<OrdenProvider>().orden;
       marcaId = context.read<OrdenProvider>().marcaId;
       if(orden.otRevisionId != 0) {
-        revisionPlagasList = await RevisionServices().getRevisionPlagas(context, orden, token);
+        revisionPlagasList = await _revisionServices.getRevisionPlagas(context, orden, token);
       }
       if (plagas.isNotEmpty){
         cargoDatosCorrectamente = true;
@@ -188,6 +191,7 @@ class _PlagasPageState extends State<PlagasPage> {
                       }
                       if (agregarPlaga) {
                         await posteoRevisionPlaga(context);
+                        agregandoPlaga = false;
                         setState(() {});
                       }
                     } else {
@@ -199,6 +203,7 @@ class _PlagasPageState extends State<PlagasPage> {
                       
                     }
                     agregandoPlaga = false;
+                    setState(() {});
                   }: null,
                   disabled: agregandoPlaga,
                   text: 'Agregar +',
@@ -246,8 +251,8 @@ class _PlagasPageState extends State<PlagasPage> {
                                       foregroundColor: Colors.red,
                                     ),
                                     onPressed: () async {
-                                      Navigator.of(context).pop(true);
-                                      await RevisionServices().deleteRevisionPlaga(context,orden,revisionPlagasList[index],token);
+                                      await _revisionServices.deleteRevisionPlaga(context,orden,revisionPlagasList[index],token);
+                                      statusCodeRevision = await _revisionServices.getStatusCode();
                                     },
                                     child: const Text("BORRAR")
                                   ),
@@ -257,18 +262,19 @@ class _PlagasPageState extends State<PlagasPage> {
                           );
                         },
                         onDismissed: (direction) async {
-                          setState(() {
+                          if(statusCodeRevision == 1){
+                            Navigator.of(context).pop(true);
+                            setState(() {
                             revisionPlagasList.removeAt(index);
-                          });
-                          ScaffoldMessenger.of(context)
-                              .showSnackBar(SnackBar(
-                            content: Text('La plaga $item ha sido borrada'),
-                          ));
+                            });
+                            ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                              content: Text('La plaga $item ha sido borrada'),
+                            ));
+                          }
                         },
                         background: Container(
                           color: Colors.red,
-                          padding:
-                              const EdgeInsets.symmetric(horizontal: 20),
+                          padding: const EdgeInsets.symmetric(horizontal: 20),
                           alignment: AlignmentDirectional.centerEnd,
                           child: const Icon(
                             Icons.delete,
@@ -282,43 +288,42 @@ class _PlagasPageState extends State<PlagasPage> {
                             title: Text(revisionPlagasList[index].plaga),
                             subtitle: Text(revisionPlagasList[index].gradoInfestacion),
                             trailing: IconButton(
-                                onPressed: () async {
-                                  if(marcaId == 0 || (orden.estado == 'PENDIENTE' || orden.estado == 'FINALIZADA')){
-                                    ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-                                      content: Text('No puede de ingresar o editar datos.'),
-                                    ));
-                                    return Future.value(false);
+                              onPressed: () async {
+                                if(marcaId == 0 || (orden.estado == 'PENDIENTE' || orden.estado == 'FINALIZADA')){
+                                  ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+                                    content: Text('No puede de ingresar o editar datos.'),
+                                  ));
+                                  return Future.value(false);
+                                }
+                                showDialog(
+                                  context: context,
+                                  builder: (BuildContext context) {
+                                    return AlertDialog(
+                                      surfaceTintColor: Colors.white,
+                                      title: const Text("Confirmar"),
+                                      content: const Text("¿Estas seguro de querer borrar la plaga?"),
+                                      actions: <Widget>[
+                                        TextButton(
+                                          onPressed: () =>Navigator.of(context).pop(false),
+                                          child: const Text("CANCELAR"),
+                                        ),
+                                        TextButton(
+                                          style: TextButton.styleFrom(foregroundColor:Colors.red,
+                                          ),
+                                          onPressed: !borrando ? () async {
+                                            borrando = true;
+                                            setState(() {});
+                                            await borrarPlaga(context, index);
+                                          } : null,
+                                          child: const Text("BORRAR")
+                                        ),
+                                      ],
+                                    );
                                   }
-                                  showDialog(
-                                      context: context,
-                                      builder: (BuildContext context) {
-                                        return AlertDialog(
-                                          surfaceTintColor: Colors.white,
-                                          title: const Text("Confirmar"),
-                                          content: const Text(
-                                              "¿Estas seguro de querer borrar la plaga?"),
-                                          actions: <Widget>[
-                                            TextButton(
-                                              onPressed: () =>
-                                                  Navigator.of(context)
-                                                      .pop(false),
-                                              child: const Text("CANCELAR"),
-                                            ),
-                                            TextButton(
-                                                style: TextButton.styleFrom(
-                                                  foregroundColor:
-                                                      Colors.red,
-                                                ),
-                                                onPressed: () async {
-                                                  await borrarPlaga(context, index);
-                                                },
-                                                child:
-                                                    const Text("BORRAR")),
-                                          ],
-                                        );
-                                      });
-                                },
-                                icon: const Icon(Icons.delete)),
+                                );
+                              },
+                              icon: const Icon(Icons.delete)
+                            ),
                           ),
                         ),
                       ),
@@ -334,41 +339,52 @@ class _PlagasPageState extends State<PlagasPage> {
   }
 
   Future<void> borrarPlaga(BuildContext context, int index) async {
-    ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-      content: Text('La plaga ${revisionPlagasList[index].plaga} ha sido borrada'),
-    ));
-    await RevisionServices().deleteRevisionPlaga(context, orden, revisionPlagasList[index], token);
-
-    setState(() {
-      revisionPlagasList.removeAt(index);
-    });
-    
+    await _revisionServices.deleteRevisionPlaga(context, orden, revisionPlagasList[index], token);
+    statusCodeRevision = await _revisionServices.getStatusCode();
+    await _revisionServices.resetStatusCode();
+    if(statusCodeRevision == 1){
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+        content: Text('La plaga ${revisionPlagasList[index].plaga} ha sido borrada'),
+      ));
+      setState(() {
+        revisionPlagasList.removeAt(index);
+      });
+    }
+    statusCodeRevision = null;
+    borrando = false;
   }
 
   Future<void> posteoRevisionPlaga(BuildContext context) async {
     var nuevaPlaga = RevisionPlaga(
-        otPlagaId: 0,
-        ordenTrabajoId: orden.ordenTrabajoId,
-        otRevisionId: orden.otRevisionId,
-        comentario: '',
-        plagaId: selectedPlaga.plagaId,
-        codPlaga: selectedPlaga.codPlaga,
-        plaga: selectedPlaga.descripcion,
-        gradoInfestacionId: selectedGrado.gradoInfestacionId,
-        codGradoInfestacion: selectedGrado.codGradoInfestacion,
-        gradoInfestacion: selectedGrado.descripcion);
-    await RevisionServices().postRevisionPlaga(
-        context,
-        orden,
-        selectedPlaga.plagaId,
-        selectedGrado.gradoInfestacionId,
-        nuevaPlaga,
-        token);
-    revisionPlagasList.add(nuevaPlaga);
-    _scrollController.animateTo(
-      _scrollController.position.maxScrollExtent + 200,
-      duration: const Duration(milliseconds: 500),
-      curve: Curves.easeInOut,
+      otPlagaId: 0,
+      ordenTrabajoId: orden.ordenTrabajoId,
+      otRevisionId: orden.otRevisionId,
+      comentario: '',
+      plagaId: selectedPlaga.plagaId,
+      codPlaga: selectedPlaga.codPlaga,
+      plaga: selectedPlaga.descripcion,
+      gradoInfestacionId: selectedGrado.gradoInfestacionId,
+      codGradoInfestacion: selectedGrado.codGradoInfestacion,
+      gradoInfestacion: selectedGrado.descripcion
     );
+    await _revisionServices.postRevisionPlaga(
+      context,
+      orden,
+      selectedPlaga.plagaId,
+      selectedGrado.gradoInfestacionId,
+      nuevaPlaga,
+      token
+    );
+    statusCodeRevision = await _revisionServices.getStatusCode();
+    await _revisionServices.resetStatusCode();
+    if(statusCodeRevision == 1) {
+      revisionPlagasList.add(nuevaPlaga);
+      _scrollController.animateTo(
+        _scrollController.position.maxScrollExtent + 200,
+        duration: const Duration(milliseconds: 500),
+        curve: Curves.easeInOut,
+      );
+      statusCodeRevision = null;
+    }
   }
 }

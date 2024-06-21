@@ -10,6 +10,7 @@ import 'package:flutter/material.dart';
 class TareasServices {
   final _dio = Dio();
   String apiLink = Config.APIURL;
+  int? statusCode;
   
   Future<void> showErrorDialog(BuildContext context, String mensaje) async {
     showDialog(
@@ -42,17 +43,19 @@ class TareasServices {
           headers: headers,
         ),
       );
+      statusCode = 1;
       final List<dynamic> tareaList = resp.data;
 
       return tareaList.map((obj) => Tarea.fromJson(obj)).toList();
     } catch (e) {
+      statusCode = 0;
       if (e is DioException) {
         if (e.response != null) {
           final responseData = e.response!.data;
           if (responseData != null) {
             if(e.response!.statusCode == 403){
               showErrorDialog(context, 'Error: ${e.response!.data['message']}');
-            }else if(e.response!.statusCode! >= 500){
+            }else if(e.response!.statusCode! >= 500) {
               showErrorDialog(context, 'Error: No se pudo completar la solicitud');
             } else{
               final errors = responseData['errors'] as List<dynamic>;
@@ -64,6 +67,8 @@ class TareasServices {
           } else {
             showErrorDialog(context, 'Error: ${e.response!.data}');
           }
+        } else {
+          showErrorDialog(context, 'Error: No se pudo completar la solicitud');
         } 
       } 
     }
@@ -80,17 +85,19 @@ class TareasServices {
           headers: headers,
         ),
       );
+      statusCode = 1;
       final List<dynamic> tareaXPTIList = resp.data;
 
       return tareaXPTIList.map((obj) => TareaXtpi.fromJson(obj)).toList();
     } catch (e) {
+      statusCode = 0;
       if (e is DioException) {
         if (e.response != null) {
           final responseData = e.response!.data;
           if (responseData != null) {
             if(e.response!.statusCode == 403){
               showErrorDialog(context, 'Error: ${e.response!.data['message']}');
-            }else if(e.response!.statusCode! >= 500){
+            }else if(e.response!.statusCode! >= 500) {
               showErrorDialog(context, 'Error: No se pudo completar la solicitud');
             } else{
               final errors = responseData['errors'] as List<dynamic>;
@@ -102,6 +109,8 @@ class TareasServices {
           } else {
             showErrorDialog(context, 'Error: ${e.response!.data}');
           }
+        } else {
+          showErrorDialog(context, 'Error: No se pudo completar la solicitud');
         } 
       } 
     }

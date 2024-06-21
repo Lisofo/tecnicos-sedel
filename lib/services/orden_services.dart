@@ -10,7 +10,7 @@ import 'package:provider/provider.dart';
 class OrdenServices {
   final _dio = Dio();
   String apiLink = Config.APIURL;
-  int statusCode = 0;
+  int? statusCode = 0;
 
   static Future<void> showDialogs(BuildContext context, String errorMessage,
       bool doblePop, bool triplePop) async {
@@ -72,14 +72,16 @@ class OrdenServices {
         options: Options(
           method: 'GET',
           headers: headers,
+
         ),
       );
-
+      statusCode = 1;
       final List<dynamic> ordenList = resp.data;
       var retorno = ordenList.map((obj) => Orden.fromJson(obj)).toList();
       print(retorno.length);
       return retorno;
     } catch (e) {
+      statusCode = 0;
       if (e is DioException) {
         if (e.response != null) {
           final responseData = e.response!.data;
@@ -98,12 +100,15 @@ class OrdenServices {
           } else {
             showErrorDialog(context, 'Error: ${e.response!.data}');
           }
-        } 
+        } else {
+          showErrorDialog(context, 'Error: No se pudo completar la solicitud');
+        }
       } 
     }
   }
 
   Future<int?> getStatusCode() async {
+    statusCode = null;
     return statusCode;
   }
 
@@ -114,14 +119,15 @@ class OrdenServices {
     try {
       var headers = {'Authorization': token};
       var data = ({"estado": estado, "ubicacionId": ubicacionId});
-      var resp = await _dio.request(link,
-          options: Options(
-            method: 'PATCH',
-            headers: headers,
-          ),
-          data: data);
-        
-      statusCode = resp.statusCode!;
+      var resp = await _dio.request(
+        link,
+        options: Options(
+          method: 'PATCH',
+          headers: headers,
+        ),
+        data: data
+      );
+      statusCode = 1;
       if (resp.statusCode == 200) {
         orden.estado = estado;
         Provider.of<OrdenProvider>(context, listen: false).cambiarEstadoOrden(estado);
@@ -132,22 +138,27 @@ class OrdenServices {
 
       return;
     } catch (e) {
+      statusCode = 0;
       if (e is DioException) {
         if (e.response != null) {
           final responseData = e.response!.data;
           if (responseData != null) {
             if(e.response!.statusCode == 403){
               showErrorDialog(context, 'Error: ${e.response!.data['message']}');
-            }else{
+            }else if(e.response!.statusCode! >= 500) {
+              showErrorDialog(context, 'Error: No se pudo completar la solicitud');
+            } else{
               final errors = responseData['errors'] as List<dynamic>;
               final errorMessages = errors.map((error) {
-              return "Error: ${error['message']}";
-            }).toList();
-            showErrorDialog(context, errorMessages.join('\n'));
-          }
+                return "Error: ${error['message']}";
+              }).toList();
+              showErrorDialog(context, errorMessages.join('\n'));
+            }
           } else {
             showErrorDialog(context, 'Error: ${e.response!.data}');
           }
+        } else {
+          showErrorDialog(context, 'Error: No se pudo completar la solicitud');
         } 
       } 
     }

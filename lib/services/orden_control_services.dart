@@ -10,6 +10,7 @@ class OrdenControlServices{
   final _dio = Dio();
   String apiUrl = Config.APIURL;
   late String apiLink = '${apiUrl}api/v1/ordenes/';
+  int? statusCode;
 
   static void showErrorDialog(BuildContext context, String errorMessage) {
     showDialog(
@@ -59,6 +60,11 @@ class OrdenControlServices{
     );
   }
 
+  Future<int?> getStatusCode() async {
+    statusCode = null;
+    return statusCode;
+  }
+
   Future getControlOrden(BuildContext context, Orden orden, String token) async {
     String link = '$apiLink${orden.ordenTrabajoId}/revisiones/${orden.otRevisionId}/controles';
 
@@ -71,26 +77,32 @@ class OrdenControlServices{
           headers: headers,
         ),
       );
+      statusCode = 1;
       final List<dynamic> controlesList = resp.data;
 
       return controlesList.map((obj) => ControlOrden.fromJson(obj)).toList();
     } catch (e) {
+      statusCode = 0;
       if (e is DioException) {
         if (e.response != null) {
           final responseData = e.response!.data;
           if (responseData != null) {
             if(e.response!.statusCode == 403){
               showErrorDialog(context, 'Error: ${e.response!.data['message']}');
-            }else{
+            }else if(e.response!.statusCode! >= 500) {
+              showErrorDialog(context, 'Error: No se pudo completar la solicitud');
+            } else{
               final errors = responseData['errors'] as List<dynamic>;
               final errorMessages = errors.map((error) {
-              return "Error: ${error['message']}";
-            }).toList();
-            showErrorDialog(context, errorMessages.join('\n'));
-          }
+                return "Error: ${error['message']}";
+              }).toList();
+              showErrorDialog(context, errorMessages.join('\n'));
+            }
           } else {
             showErrorDialog(context, 'Error: ${e.response!.data}');
           }
+        } else {
+          showErrorDialog(context, 'Error: No se pudo completar la solicitud');
         } 
       } 
     }
@@ -101,29 +113,39 @@ class OrdenControlServices{
       String link = '$apiLink${orden.ordenTrabajoId}/revisiones/${orden.otRevisionId}/controles/${control.controlRegId}';
       var headers = {'Authorization': token};
 
-      final resp = await _dio.request(link,
-          data: control.toMap(),
-          options: Options(method: 'PUT', headers: headers));
-
+      final resp = await _dio.request(
+        link,
+        data: control.toMap(),
+        options: Options(
+          method: 'PUT', 
+          headers: headers
+          )
+        );
+      statusCode = 1;
       if (resp.statusCode == 200) { }
       return;
     } catch (e) {
+      statusCode = 0;
       if (e is DioException) {
         if (e.response != null) {
           final responseData = e.response!.data;
           if (responseData != null) {
             if(e.response!.statusCode == 403){
               showErrorDialog(context, 'Error: ${e.response!.data['message']}');
-            }else{
+            }else if(e.response!.statusCode! >= 500) {
+              showErrorDialog(context, 'Error: No se pudo completar la solicitud');
+            } else{
               final errors = responseData['errors'] as List<dynamic>;
               final errorMessages = errors.map((error) {
-              return "Error: ${error['message']}";
-            }).toList();
-            showErrorDialog(context, errorMessages.join('\n'));
-          }
+                return "Error: ${error['message']}";
+              }).toList();
+              showErrorDialog(context, errorMessages.join('\n'));
+            }
           } else {
             showErrorDialog(context, 'Error: ${e.response!.data}');
           }
+        } else {
+          showErrorDialog(context, 'Error: No se pudo completar la solicitud');
         } 
       } 
     }
@@ -135,31 +157,41 @@ class OrdenControlServices{
       String link = '$apiLink${orden.ordenTrabajoId}/revisiones/${orden.otRevisionId}/controles/';
       var headers = {'Authorization': token};
       var data = control.toMap();
-      final resp = await _dio.request(link,
-          data: data,
-          options: Options(method: 'POST', headers: headers));
-
+      final resp = await _dio.request(
+        link,
+        data: data,
+        options: Options(
+          method: 'POST', 
+          headers: headers
+        )
+      );
+      statusCode = 1;
       if (resp.statusCode == 201) {
         control.controlRegId = resp.data["controlRegId"]; 
       }
       return;
     } catch (e) {
+      statusCode = 0;
       if (e is DioException) {
         if (e.response != null) {
           final responseData = e.response!.data;
           if (responseData != null) {
             if(e.response!.statusCode == 403){
               showErrorDialog(context, 'Error: ${e.response!.data['message']}');
-            }else{
+            }else if(e.response!.statusCode! >= 500) {
+              showErrorDialog(context, 'Error: No se pudo completar la solicitud');
+            } else{
               final errors = responseData['errors'] as List<dynamic>;
               final errorMessages = errors.map((error) {
-              return "Error: ${error['message']}";
-            }).toList();
-            showErrorDialog(context, errorMessages.join('\n'));
-          }
+                return "Error: ${error['message']}";
+              }).toList();
+              showErrorDialog(context, errorMessages.join('\n'));
+            }
           } else {
             showErrorDialog(context, 'Error: ${e.response!.data}');
           }
+        } else {
+          showErrorDialog(context, 'Error: No se pudo completar la solicitud');
         } 
       } 
     }

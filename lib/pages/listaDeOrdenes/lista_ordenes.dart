@@ -55,13 +55,15 @@ class _ListaOrdenesState extends State<ListaOrdenes> {
   }
 
   cargarDatos() async {
-    token = context.read<OrdenProvider>().token;
-    tecnicoId = context.read<OrdenProvider>().tecnicoId;
-    ordenes = await ordenServices.getOrden(context, tecnicoId.toString(), opcionActual, opcionActual, token);
-
-    Provider.of<OrdenProvider>(context, listen: false).setOrdenes(ordenes);
-
-    setState(() {});
+    try {
+      token = context.read<OrdenProvider>().token;
+      tecnicoId = context.read<OrdenProvider>().tecnicoId;
+      ordenes = await ordenServices.getOrden(context, tecnicoId.toString(), opcionActual, opcionActual, token);
+      Provider.of<OrdenProvider>(context, listen: false).setOrdenes(ordenes);
+      setState(() {});
+    } catch (e) {
+      print(e);
+    }
   }
 
   String opcionActual = fechas[0];

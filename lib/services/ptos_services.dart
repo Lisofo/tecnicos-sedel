@@ -14,13 +14,9 @@ import 'package:provider/provider.dart';
 class PtosInspeccionServices {
   final _dio = Dio();
   String apiUrl = Config.APIURL;
+  int? statusCode;
 
-  static Future<void> showDialogs(
-    BuildContext context,
-    String errorMessage,
-    bool doblePop,
-    bool triplePop,
-  ) async {
+  static Future<void> showDialogs(BuildContext context,String errorMessage,bool doblePop,bool triplePop,) async {
     showDialog(
       context: context,
       builder: (context) {
@@ -66,6 +62,11 @@ class PtosInspeccionServices {
     );
   }
 
+  Future<int?> getStatusCode() async {
+    statusCode = null;
+    return statusCode;
+  }
+
   Future getTiposPtosInspeccion(BuildContext context, String token) async {
     String link = '${apiUrl}api/v1/tipos/puntos';
 
@@ -78,17 +79,19 @@ class PtosInspeccionServices {
           headers: headers,
         ),
       );
+      statusCode = 1;
       final List tipoPtoInspeccionList = resp.data;
       var retorno = tipoPtoInspeccionList.map((e) => TipoPtosInspeccion.fromJson(e)).toList();
       return retorno;
     } catch (e) {
+      statusCode = 0;
       if (e is DioException) {
         if (e.response != null) {
           final responseData = e.response!.data;
           if (responseData != null) {
             if(e.response!.statusCode == 403){
               showErrorDialog(context, 'Error: ${e.response!.data['message']}');
-            }else if(e.response!.statusCode! >= 500){
+            }else if(e.response!.statusCode! >= 500) {
               showErrorDialog(context, 'Error: No se pudo completar la solicitud');
             } else{
               final errors = responseData['errors'] as List<dynamic>;
@@ -100,6 +103,8 @@ class PtosInspeccionServices {
           } else {
             showErrorDialog(context, 'Error: ${e.response!.data}');
           }
+        } else {
+          showErrorDialog(context, 'Error: No se pudo completar la solicitud');
         } 
       } 
     }
@@ -117,6 +122,7 @@ class PtosInspeccionServices {
           headers: headers,
         ),
       );
+      statusCode = 1;
       final List ptoInspeccionList = resp.data;
       var retorno = ptoInspeccionList.map((e) => RevisionPtoInspeccion.fromJson(e)).toList();
 
@@ -124,13 +130,14 @@ class PtosInspeccionServices {
 
       return retorno;
     } catch (e) {
+      statusCode = 0;
       if (e is DioException) {
         if (e.response != null) {
           final responseData = e.response!.data;
           if (responseData != null) {
             if(e.response!.statusCode == 403){
               showErrorDialog(context, 'Error: ${e.response!.data['message']}');
-            }else if(e.response!.statusCode! >= 500){
+            }else if(e.response!.statusCode! >= 500) {
               showErrorDialog(context, 'Error: No se pudo completar la solicitud');
             } else{
               final errors = responseData['errors'] as List<dynamic>;
@@ -142,6 +149,8 @@ class PtosInspeccionServices {
           } else {
             showErrorDialog(context, 'Error: ${e.response!.data}');
           }
+        } else {
+          showErrorDialog(context, 'Error: No se pudo completar la solicitud');
         } 
       } 
     }
@@ -210,11 +219,13 @@ class PtosInspeccionServices {
         ),
         data: data
       );
+      statusCode = 1;
       if (resp.statusCode == 201) {
         revisionPtoInspeccion.otPuntoInspeccionId = resp.data["otPuntoInspeccionId"];
       }
       return;
     } catch (e) {
+      statusCode = 0;
       if (e is DioException) {
         if (e.response != null) {
           final responseData = e.response!.data;
@@ -308,11 +319,13 @@ class PtosInspeccionServices {
             headers: headers,
           ),
           data: data);
+      statusCode = 1;
       if (resp.statusCode == 200) {
         revisionPtoInspeccion.otPuntoInspeccionId = resp.data["otPuntoInspeccionId"];
       }
       return;
     } catch (e) {
+      statusCode = 0;
       if (e is DioException) {
         if (e.response != null) {
           final responseData = e.response!.data;
@@ -346,8 +359,10 @@ class PtosInspeccionServices {
         ),
       );
 
+      statusCode = 1;
       return resp;
     } catch (e) {
+      statusCode = 0;
       if (e is DioException) {
         if (e.response != null) {
           final responseData = e.response!.data;
@@ -380,9 +395,11 @@ class PtosInspeccionServices {
         ),
       );
 
+      statusCode = 1;
       final RevisionPtoInspeccion ptoInspeccion = RevisionPtoInspeccion.fromJson(resp.data);
       return ptoInspeccion;
     } catch (e) {
+      statusCode = 0;
       if (e is DioException) {
         if (e.response != null) {
           final responseData = e.response!.data;
@@ -498,9 +515,11 @@ class PtosInspeccionServices {
         options: Options(
           method: 'POST',
           headers: headers,
+
         ),
         data: datosJson
       );
+      statusCode = 1;
       // print(resp);
       // print(resp.data[0]["status"]);
       // print(resp.data[0]["content"]["otPuntoInspeccionId"]);
@@ -516,6 +535,7 @@ class PtosInspeccionServices {
       }
       return;
     } catch (e) {
+      statusCode = 0;
       if (e is DioException) {
         if (e.response != null) {
           final responseData = e.response!.data;
@@ -563,7 +583,8 @@ class PtosInspeccionServices {
         ),
         data: datosJson
       );
-      print(resp);
+      statusCode = 1;
+      // print(resp);
       if (resp.statusCode == 201) {
         // for(int i = 0; i < acciones.length; i++){
         //   acciones[i].otPuntoInspeccionId = resp.data["otPuntoInspeccionId"];
@@ -571,6 +592,7 @@ class PtosInspeccionServices {
       }
       return;
     } catch (e) {
+      statusCode = 0;
       if (e is DioException) {
         if (e.response != null) {
           final responseData = e.response!.data;
