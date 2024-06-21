@@ -23,12 +23,14 @@ class _ObservacionesPageState extends State<ObservacionesPage> {
   late String token = '';
   late List<Observacion> observaciones = [];
   late int marcaId = 0;
+  final _revisionServices = RevisionServices();
   bool _isButtonEnabledObs = false;
   bool _isButtonEnabledCom = false;
   String _initialObs = '';
   String _initialCom = '';
   bool cargoDatosCorrectamente = false;
   bool cargando = true;
+  int? statusCodeRevision;
 
   @override
   void initState() {
@@ -56,7 +58,7 @@ class _ObservacionesPageState extends State<ObservacionesPage> {
       orden = context.read<OrdenProvider>().orden;
       marcaId = context.read<OrdenProvider>().marcaId;
       if(orden.otRevisionId != 0){
-        observaciones = await RevisionServices().getObservacion(context, orden, token);
+        observaciones = await _revisionServices.getObservacion(context, orden, token);
       }
       if (observaciones.isNotEmpty) {
         observacion = observaciones[0];
@@ -200,16 +202,22 @@ class _ObservacionesPageState extends State<ObservacionesPage> {
     observacion.obsRestringida = observacionController.text;
 
     if (observacion.otObservacionId == 0) {
-      await RevisionServices().postObservacion(context, orden, observacion, token);
+      await _revisionServices.postObservacion(context, orden, observacion, token);
+      statusCodeRevision = await _revisionServices.getStatusCode();
+      await _revisionServices.resetStatusCode();
     } else {
-      await RevisionServices().putObservacion(context, orden, observacion, token);
+      await _revisionServices.putObservacion(context, orden, observacion, token);
+      statusCodeRevision = await _revisionServices.getStatusCode();
+      await _revisionServices.resetStatusCode();
     }
-
-    setState(() {
-      _initialObs = observacionController.text;
-      _initialCom = comentarioInternoController.text;
-      _isButtonEnabledCom = false;
-      _isButtonEnabledObs = false;
-    });
+    if(statusCodeRevision == 1){
+      setState(() {
+        _initialObs = observacionController.text;
+        _initialCom = comentarioInternoController.text;
+        _isButtonEnabledCom = false;
+        _isButtonEnabledObs = false;
+      });  
+    }
+    statusCodeRevision = null;  
   }
 }

@@ -63,8 +63,11 @@ class MaterialesServices {
   }
 
   Future<int?> getStatusCode() async {
-    statusCode = null;
     return statusCode;
+  }
+
+  Future<void> resetStatusCode() async {
+    statusCode = null;
   }
 
   Future getMateriales(BuildContext context,String token) async {

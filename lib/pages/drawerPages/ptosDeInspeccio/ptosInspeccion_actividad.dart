@@ -19,8 +19,7 @@ class PtosInspeccionActividad extends StatefulWidget {
   const PtosInspeccionActividad({super.key});
 
   @override
-  State<PtosInspeccionActividad> createState() =>
-      _PtosInspeccionActividadState();
+  State<PtosInspeccionActividad> createState() => _PtosInspeccionActividadState();
 }
 
 class _PtosInspeccionActividadState extends State<PtosInspeccionActividad> {
@@ -47,6 +46,8 @@ class _PtosInspeccionActividadState extends State<PtosInspeccionActividad> {
   late RevisionPtoInspeccion nuevaRevisionPtoInspeccion = RevisionPtoInspeccion.empty();
   bool cargoDatosCorrectamente = false;
   bool cargando = true;
+  final _ptosInspeccionServices = PtosInspeccionServices();
+  int? statusCodeRevision;
 
   @override
   void initState() {
@@ -450,12 +451,17 @@ class _PtosInspeccionActividadState extends State<PtosInspeccionActividad> {
       Provider.of<OrdenProvider>(context, listen: false).actualizarPunto(i, ptoInspeccionSeleccionados[i]);
     }
     await postAcciones(ptoInspeccionSeleccionados);
+    statusCodeRevision = null;
     subiendoAcciones = false;
   }
 
   Future postAcciones(List<RevisionPtoInspeccion> acciones) async {
-    await PtosInspeccionServices().postAcciones(context, orden, acciones, token);
-    await PtosInspeccionServices.showDialogs(context, acciones.length == 1 ? 'Accion creada' : 'Acciones creadas', true, true);
+    await _ptosInspeccionServices.postAcciones(context, orden, acciones, token);
+    statusCodeRevision = await _ptosInspeccionServices.getStatusCode();
+    await _ptosInspeccionServices.resetStatusCode();
+    if(statusCodeRevision == 1) {
+      await PtosInspeccionServices.showDialogs(context, acciones.length == 1 ? 'Accion creada' : 'Acciones creadas', true, true);
+    }
   }
 
   Widget PopUpPlagas(BuildContext context) {

@@ -112,8 +112,11 @@ class OrdenServices {
   }
 
   Future<int?> getStatusCode() async {
-    statusCode = null;
     return statusCode;
+  }
+
+  Future<void> resetStatusCode() async {
+    statusCode = null;
   }
 
   Future patchOrden(BuildContext context, Orden orden, String estado, int ubicacionId, String token) async {

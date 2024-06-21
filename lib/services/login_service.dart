@@ -48,9 +48,9 @@ class LoginServices {
         data: data,
       );
 
-      statusCode = response.statusCode;
+      statusCode = 1;
 
-      if (statusCode == 200) {
+      if (statusCode == 1) {
         print(response.data['token']);
         Provider.of<OrdenProvider>(context, listen: false).setToken(response.data['token']);
         Provider.of<OrdenProvider>(context, listen: false).setUsuarioId(response.data['uid']);
@@ -60,21 +60,22 @@ class LoginServices {
         print(response.statusMessage);
       }
     } catch (e) {
-      statusCode = 0;
+      // statusCode = 0;
       if (e is DioException) {
         if (e.response != null) {
+          statusCode = e.response!.statusCode;
           final responseData = e.response!.data;
           if (responseData != null) {
             if(e.response!.statusCode == 403){
               showErrorDialog(context, 'Error: ${e.response!.data['message']}');
             }else if(e.response!.statusCode! >= 500) {
               showErrorDialog(context, 'Error: No se pudo completar la solicitud');
-            } else{
-              final errors = responseData['errors'] as List<dynamic>;
-              final errorMessages = errors.map((error) {
-              return "Error: ${error['message']}";
-            }).toList();
-            showErrorDialog(context, errorMessages.join('\n'));
+            // } else{
+            //   final errors = responseData['errors'] as List<dynamic>;
+            //   final errorMessages = errors.map((error) {
+            //   return "Error: ${error['message']}";
+            // }).toList();
+            // showErrorDialog(context, errorMessages.join('\n'));
           }
           } else {
             showErrorDialog(context, 'Error: ${e.response!.data}');
@@ -88,5 +89,9 @@ class LoginServices {
 
   Future<int?> getStatusCode() async {
     return statusCode;
+  }
+
+  Future<void> resetStatusCode() async {
+    statusCode = null;
   }
 }

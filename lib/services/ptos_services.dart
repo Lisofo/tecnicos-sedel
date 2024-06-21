@@ -63,8 +63,11 @@ class PtosInspeccionServices {
   }
 
   Future<int?> getStatusCode() async {
-    statusCode = null;
     return statusCode;
+  }
+
+  Future<void> resetStatusCode() async {
+    statusCode = null;
   }
 
   Future getTiposPtosInspeccion(BuildContext context, String token) async {

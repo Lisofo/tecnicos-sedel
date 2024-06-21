@@ -61,7 +61,6 @@ class OrdenControlServices{
   }
 
   Future<int?> getStatusCode() async {
-    statusCode = null;
     return statusCode;
   }
 

@@ -43,7 +43,8 @@ class _ResumenOrdenState extends State<ResumenOrden> {
   List<RevisionPtoInspeccion> ptosInspeccion = [];
   bool faltanCompletarPtos = false;
   bool yaCargo = false;
-  final ordenServices = OrdenServices();
+  final _ordenServices = OrdenServices();
+  final _ubicacionServices = UbicacionServices();
   late int? statusCode = 0;
   
   @override
@@ -236,17 +237,19 @@ class _ResumenOrdenState extends State<ResumenOrden> {
   cambiarEstado(String estado) async {
     if (!ejecutando) {
       ejecutando = true;
-
       await obtenerUbicacion();
-      int ubicacionId = ubicacion.ubicacionId;
-      await ordenServices.patchOrden(context, orden, estado, ubicacionId, token);
-      statusCode = await ordenServices.getStatusCode();
-      if(statusCode == 200){
-        await OrdenServices.showDialogs(context, 'Estado cambiado correctamente', true, false);
+      if(statusCode == 1) {
+        int ubicacionId = ubicacion.ubicacionId;
+        await _ordenServices.patchOrden(context, orden, estado, ubicacionId, token);
+        statusCode = await _ordenServices.getStatusCode();
+        await _ordenServices.resetStatusCode();
+        if(statusCode == 1){
+          await OrdenServices.showDialogs(context, 'Estado cambiado correctamente', true, false);
+        }
       }
-      setState(() {});
-
+      statusCode = null;
       ejecutando = false;
+      setState(() {});
     }
   }
 
@@ -256,10 +259,10 @@ class _ResumenOrdenState extends State<ResumenOrden> {
     ubicacion.fecha = DateTime.now();
     ubicacion.usuarioId = uId;
     ubicacion.ubicacion = _currentPosition;
-
     String token = context.read<OrdenProvider>().token;
-
-    await UbicacionServices().postUbicacion(context, ubicacion, token);
+    await _ubicacionServices.postUbicacion(context, ubicacion, token);
+    statusCode = await _ubicacionServices.getStatusCode();
+    await _ubicacionServices.resetStatusCode();
   }
 
   Future<void> getLocation() async {

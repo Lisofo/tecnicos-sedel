@@ -46,6 +46,8 @@ class _MaterialesPageState extends State<MaterialesPage> {
   bool borrando = false;
   bool cargoDatosCorrectamente = false;
   bool cargando = true;
+  int? statusCodeRevision;
+  final _materialesServices = MaterialesServices();
 
   @override
   void initState() {
@@ -58,9 +60,9 @@ class _MaterialesPageState extends State<MaterialesPage> {
     try {
       orden = context.read<OrdenProvider>().orden;
       marcaId = context.read<OrdenProvider>().marcaId;
-      materiales = await MaterialesServices().getMateriales(context, token);
+      materiales = await _materialesServices.getMateriales(context, token);
       if(orden.otRevisionId != 0) {
-        revisionMaterialesList = await MaterialesServices().getRevisionMateriales(context, orden, token);
+        revisionMaterialesList = await _materialesServices.getRevisionMateriales(context, orden, token);
       }
       if (materiales.isNotEmpty){
         cargoDatosCorrectamente = true;
@@ -74,12 +76,15 @@ class _MaterialesPageState extends State<MaterialesPage> {
   }
 
   Future<bool> _showMaterialDetails(BuildContext context, Materiales material) async {
-    plagas = await PlagaServices().getPlagas(context, token);
-    lotes = await MaterialesServices().getLotes(context, selectedMaterial.materialId, token);
-    metodosAplicacion = await MaterialesServices().getMetodosAplicacion(context, token);
-    selectedMetodo = MetodoAplicacion.empty();
-    selectedLote = Lote.empty();
-
+    try {
+      plagas = await PlagaServices().getPlagas(context, token);
+      lotes = await _materialesServices.getLotes(context, selectedMaterial.materialId, token);
+      metodosAplicacion = await _materialesServices.getMetodosAplicacion(context, token);
+      selectedMetodo = MetodoAplicacion.empty();
+      selectedLote = Lote.empty();  
+    } catch (e) {
+      e;
+    }
     showDialog(
       context: context,
       builder: (BuildContext context) {
@@ -199,9 +204,14 @@ class _MaterialesPageState extends State<MaterialesPage> {
                     for (var i = 0; i < plagasSeleccionadas.length; i++) {
                       plagasIds.add(plagasSeleccionadas[i].plagaId);
                     }
-                    await MaterialesServices().postRevisionMaterial(context, orden, plagasIds, nuevaRevisionMaterial, token);
-                    revisionMaterialesList.add(nuevaRevisionMaterial);
-                    setState(() {});
+                    await _materialesServices.postRevisionMaterial(context, orden, plagasIds, nuevaRevisionMaterial, token);
+                    statusCodeRevision = await _materialesServices.getStatusCode();
+                    await _materialesServices.resetStatusCode();
+                    if(statusCodeRevision == 1) {
+                      revisionMaterialesList.add(nuevaRevisionMaterial);
+                      statusCodeRevision = null;
+                      setState(() {});
+                    }
                   } else {
                     showDialog(
                       context: context, 
@@ -488,10 +498,15 @@ class _MaterialesPageState extends State<MaterialesPage> {
               onPressed: () async {
                 if(!borrando){
                   borrando = true;
-                  await MaterialesServices().deleteRevisionMaterial(context,orden,revisionMaterialesList[i],token);
-                  setState(() {
-                    revisionMaterialesList.removeAt(i);
-                  });
+                  await _materialesServices.deleteRevisionMaterial(context,orden,revisionMaterialesList[i],token);
+                  statusCodeRevision = await _materialesServices.getStatusCode();
+                  await _materialesServices.resetStatusCode();
+                  if(statusCodeRevision == 1) {
+                    setState(() {
+                      revisionMaterialesList.removeAt(i);
+                    });
+                  }
+                  statusCodeRevision = null;
                   borrando = false;
                 }
               },
@@ -504,7 +519,11 @@ class _MaterialesPageState extends State<MaterialesPage> {
   }
 
   Future<void> verManual(BuildContext context, RevisionMaterial? item, Materiales? material) async {
-    manuales = material == null ? await MaterialesServices().getManualesMateriales(context, item!.material.materialId, token) : await MaterialesServices().getManualesMateriales(context, material.materialId, token);
+    try {
+      manuales = material == null ? await _materialesServices.getManualesMateriales(context, item!.material.materialId, token) : await _materialesServices.getManualesMateriales(context, material.materialId, token);
+    } catch (e) {
+      print(e);
+    }
     showDialog(
       context: context, 
       builder: (BuildContext context) {
@@ -709,13 +728,17 @@ class _MaterialesPageState extends State<MaterialesPage> {
                     for (var i = 0; i < plagasSeleccionadas.length; i++) {
                       plagasIds.add(plagasSeleccionadas[i].plagaId);
                     }
-                    await MaterialesServices().putRevisionMaterial(context, orden, plagasIds, nuevaRevisionMaterial, token);
-                    selectedLote = Lote.empty();
-                    selectedMetodo = MetodoAplicacion.empty();
-                    ubicacionController.text = '';
-                    areaController.text = '';
-                    cantidadController.text = '';
-                    revisionMaterialesList = await MaterialesServices().getRevisionMateriales(context, orden, token);
+                    await _materialesServices.putRevisionMaterial(context, orden, plagasIds, nuevaRevisionMaterial, token);
+                    statusCodeRevision = await _materialesServices.getStatusCode();
+                    await _materialesServices.resetStatusCode();
+                    if(statusCodeRevision == 1){
+                      selectedLote = Lote.empty();
+                      selectedMetodo = MetodoAplicacion.empty();
+                      ubicacionController.text = '';
+                      areaController.text = '';
+                      cantidadController.text = '';
+                      revisionMaterialesList = await _materialesServices.getRevisionMateriales(context, orden, token);
+                    }
                     setState(() {});
                   } else {
                     showDialog(

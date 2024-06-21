@@ -43,6 +43,8 @@ class _PtosInspeccionPageState extends State<PtosInspeccionPage> {
   late int marcaId = 0;
   bool pendientes = false;
   final GlobalKey<RefreshIndicatorState> _refreshIndicatorKey = GlobalKey<RefreshIndicatorState>();
+  final _ptosInspeccionServices = PtosInspeccionServices();
+  int? statusCodeRevision;
   bool subiendoAcciones = false;
   String _searchTerm = '';
   bool cargoDatosCorrectamente = false;
@@ -829,14 +831,20 @@ class _PtosInspeccionPageState extends State<PtosInspeccionPage> {
     );
 
     if (nuevaRevisionPtoInspeccion.otPuntoInspeccionId != 0) {
-      await PtosInspeccionServices().putPtoInspeccionAccion(context, orden, nuevaRevisionPtoInspeccion, token);
+      await _ptosInspeccionServices.putPtoInspeccionAccion(context, orden, nuevaRevisionPtoInspeccion, token);
+      statusCodeRevision = await _ptosInspeccionServices.getStatusCode();
+      await _ptosInspeccionServices.resetStatusCode();
     } else {
-      await PtosInspeccionServices().postPtoInspeccionAccion(context, orden, nuevaRevisionPtoInspeccion, token);
+      await _ptosInspeccionServices.postPtoInspeccionAccion(context, orden, nuevaRevisionPtoInspeccion, token);
+      statusCodeRevision = await _ptosInspeccionServices.getStatusCode();
+      await _ptosInspeccionServices.resetStatusCode();
     }
-
-    await actualizarDatos();
-    limpiarDatos();
-    PtosInspeccionServices.showDialogs(context, 'Punto guardado', true, false);
+    if(statusCodeRevision == 1) {
+      await actualizarDatos();
+      limpiarDatos();
+      PtosInspeccionServices.showDialogs(context, 'Punto guardado', true, false);
+    }
+    statusCodeRevision = null;
     subiendoAcciones = false;
   }
 
@@ -849,22 +857,32 @@ class _PtosInspeccionPageState extends State<PtosInspeccionPage> {
   }
 
   Future<void> actualizarDatos() async {
-    ptosInspeccion = await PtosInspeccionServices().getPtosInspeccion(context, orden, token);
+    ptosInspeccion = await _ptosInspeccionServices.getPtosInspeccion(context, orden, token);
     plagasObjetivo = await PlagaServices().getPlagasObjetivo(context, token);
 
     setState(() {});
   }
 
   Future borrarAcciones() async {
-    await PtosInspeccionServices().deleteAcciones(context, orden, puntosSeleccionados, token);
-    await actualizarDatos();
-    await PtosInspeccionServices.showDialogs(context, puntosSeleccionados.length == 1 ? 'Accion borrada' : 'Acciones borradas', true, false);
+    await _ptosInspeccionServices.deleteAcciones(context, orden, puntosSeleccionados, token);
+    statusCodeRevision = await _ptosInspeccionServices.getStatusCode();
+    await _ptosInspeccionServices.resetStatusCode();
+    if(statusCodeRevision == 1) {
+      await actualizarDatos();
+      await PtosInspeccionServices.showDialogs(context, puntosSeleccionados.length == 1 ? 'Accion borrada' : 'Acciones borradas', true, false);
+    }
+    statusCodeRevision = null;
   }
   
   Future postAcciones(List<RevisionPtoInspeccion> acciones) async {
-    await PtosInspeccionServices().postAcciones(context, orden, acciones, token);
-    await actualizarDatos();
-    await PtosInspeccionServices.showDialogs(context, acciones.length == 1 ? 'Accion creada' : 'Acciones creadas', true, false);
+    await _ptosInspeccionServices.postAcciones(context, orden, acciones, token);
+    statusCodeRevision = await _ptosInspeccionServices.getStatusCode();
+    await _ptosInspeccionServices.resetStatusCode();
+    if(statusCodeRevision == 1) {
+      await actualizarDatos();
+      await PtosInspeccionServices.showDialogs(context, acciones.length == 1 ? 'Accion creada' : 'Acciones creadas', true, false);
+    }
+    statusCodeRevision = null;
   }
 
   Future borrarAccion() async {

@@ -409,8 +409,7 @@ class _OrdenInternaState extends State<OrdenInterna> {
 
   Future<void> getLocation() async {
     try {
-      Position position = await Geolocator.getCurrentPosition(
-          desiredAccuracy: LocationAccuracy.high);
+      Position position = await Geolocator.getCurrentPosition(desiredAccuracy: LocationAccuracy.high);
       setState(() {
         _currentPosition = '${position.latitude}, ${position.longitude}';
         print('${position.latitude}, ${position.longitude}');

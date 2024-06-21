@@ -175,10 +175,17 @@ class _LoginState extends State<Login> {
 
     if (_formKey.currentState?.validate() == true) {
       var statusCode = await _loginServices.getStatusCode();
-
-      if (statusCode == 200) {
+      await _loginServices.resetStatusCode();
+      if (statusCode == 1) {
         context.pushReplacement('/entradaSalida');
       } else if (statusCode == null) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Revise su conexión'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      } else if (statusCode >= 400 && statusCode < 500){
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
             content: Text('Credenciales inválidas. Intente nuevamente.'),

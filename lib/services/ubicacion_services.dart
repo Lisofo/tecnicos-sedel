@@ -10,8 +10,7 @@ class UbicacionServices {
   final _dio = Dio();
   int? statusCode;
 
-  static Future<void> showDialogs(BuildContext context, String errorMessage,
-      bool doblePop, bool triplePop) async {
+  static Future<void> showDialogs(BuildContext context, String errorMessage, bool doblePop, bool triplePop) async {
     showDialog(
       context: context,
       builder: (context) {
@@ -63,6 +62,14 @@ class UbicacionServices {
         ],
       ),
     );
+  }
+
+  Future<int?> getStatusCode() async {
+    return statusCode;
+  }
+
+  Future<void> resetStatusCode() async {
+    statusCode = null;
   }
 
   Future postUbicacion(BuildContext context, Ubicacion ubicacion, String token) async {
