@@ -38,6 +38,14 @@ class UbicacionServices {
     );
   }
 
+  Future<int?> getStatusCode() async {
+    return statusCode;
+  }
+
+  Future<void> resetStatusCode() async {
+    statusCode = null;
+  }
+
   Future<void> showErrorDialog(BuildContext context, String mensaje) async {
     showDialog(
       context: context,

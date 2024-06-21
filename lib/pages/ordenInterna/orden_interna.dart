@@ -31,6 +31,10 @@ class _OrdenInternaState extends State<OrdenInterna> {
   late Ubicacion ubicacion = Ubicacion.empty();
   bool ejecutando = false;
   String token = '';
+  final _ubicacionServices = UbicacionServices();
+  final _ordenServices = OrdenServices();
+  final _revisionServices = RevisionServices();
+  int? statusCode;
   
 
   @override
@@ -365,20 +369,29 @@ class _OrdenInternaState extends State<OrdenInterna> {
   cambiarEstado(String estado) async {
     if (!ejecutando) {
       ejecutando = true;
-
       await obtenerUbicacion();
-      int ubicacionId = ubicacion.ubicacionId;
-      int uId = context.read<OrdenProvider>().uId;
-
-      String token = context.read<OrdenProvider>().token;
-
-      await OrdenServices().patchOrden(context, orden, estado, ubicacionId, token);
-      if (estado == 'EN PROCESO') {
-        await RevisionServices().postRevision(context, uId, orden, token);
+      if (statusCode == 1){
+        int ubicacionId = ubicacion.ubicacionId;
+        int uId = context.read<OrdenProvider>().uId;
+        String token = context.read<OrdenProvider>().token;
+        await _ordenServices.patchOrden(context, orden, estado, ubicacionId, token);
+        statusCode = await _ordenServices.getStatusCode();
+        await _ordenServices.resetStatusCode();
+        if (statusCode == 1) {
+          if (estado == 'EN PROCESO') {
+            await _revisionServices.postRevision(context, uId, orden, token);
+            statusCode = await _revisionServices.getStatusCode();
+            await _revisionServices.resetStatusCode();
+            if (statusCode == 1) {
+              await OrdenServices.showDialogs(context, 'Estado cambiado correctamente', false, false);
+            }
+          }
+          
+        }
       }
-      await OrdenServices.showDialogs(context, 'Estado cambiado correctamente', false, false);
-      setState(() {});
       ejecutando = false;
+      statusCode = null;
+      setState(() {});
     }
   }
 
@@ -388,10 +401,10 @@ class _OrdenInternaState extends State<OrdenInterna> {
     ubicacion.fecha = DateTime.now();
     ubicacion.usuarioId = uId;
     ubicacion.ubicacion = _currentPosition;
-
     String token = context.read<OrdenProvider>().token;
-
-    await UbicacionServices().postUbicacion(context, ubicacion, token);
+    await _ubicacionServices.postUbicacion(context, ubicacion, token);
+    statusCode = await _ubicacionServices.getStatusCode();
+    await _ubicacionServices.resetStatusCode();
   }
 
   Future<void> getLocation() async {
@@ -430,12 +443,18 @@ class _OrdenInternaState extends State<OrdenInterna> {
                 if (!ejecutando) {
                   ejecutando = true;
                   await obtenerUbicacion();
-                  int ubicacionId = ubicacion.ubicacionId;
-                  await OrdenServices().patchOrden(context, orden, 'PENDIENTE', ubicacionId, token);
-                  setState(() {});
-                  ejecutando = false;
+                  if (statusCode == 1){
+                    int ubicacionId = ubicacion.ubicacionId;
+                    await _ordenServices.patchOrden(context, orden, 'PENDIENTE', ubicacionId, token);
+                    statusCode = await _ordenServices.getStatusCode();
+                    await _ordenServices.resetStatusCode();
+                    if (statusCode == 1){
+                      await OrdenServices.showDialogs(context, 'Estado cambiado a Pendiente', true, true);
+                    }
+                  }
                 }
-                await OrdenServices.showDialogs(context, 'Estado cambiado a Pendiente', true, true);
+                ejecutando = false;
+                statusCode = null;
                 setState(() {});
               },
               child: const Text('Confirmar')

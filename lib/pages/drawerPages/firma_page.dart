@@ -22,6 +22,7 @@ class Firma extends StatefulWidget {
 
 class _FirmaState extends State<Firma> {
   final _formKey1 = GlobalKey<FormState>();
+  final _revisionServices = RevisionServices();
   TextEditingController nameController = TextEditingController();
   TextEditingController areaController = TextEditingController();
   List<ClienteFirma> client = [];
@@ -37,6 +38,10 @@ class _FirmaState extends State<Firma> {
   bool cargoDatosCorrectamente = false;
   bool cargando = true;
   int contadorDeVeces = 0;
+  bool guardandoFirma = false;
+  int? statusCode;
+  bool estoyEditando = false;
+  bool estoyBorrando = false;
 
 
   SignatureController controller = SignatureController(
@@ -199,22 +204,30 @@ class _FirmaState extends State<Firma> {
                     Padding(
                       padding: const EdgeInsets.all(10),
                       child: CustomButton(
-                        onPressed: () async {
+                        onPressed: !guardandoFirma ? () async {
+                          guardandoFirma = true;
                           if((marcaId == 0 || (orden.estado == 'PENDIENTE' || orden.estado == 'FINALIZADA')) || clienteNoDisponible){
                             ScaffoldMessenger.of(context).showSnackBar(SnackBar(
                               content: Text(clienteNoDisponible ? 'Cliente no disponible' : 'No puede de ingresar o editar datos.'),
                             ));
+                            guardandoFirma = false;
                             return Future.value(false);
                           }
                           if (nameController.text.isNotEmpty && areaController.text.isNotEmpty) {
                             await guardarFirma(context, null);
+                            guardandoFirma = false;
                           } else {
                             completeDatosPopUp(context);
+                            guardandoFirma = false;
                           }
-                        },
+                          guardandoFirma = false;
+                          setState(() {});
+                        } : null,
                         text: 'Guardar',
                         tamano: 20,
+                        disabled: guardandoFirma,
                       ),
+                      
                     ),
                     Padding(
                       padding: const EdgeInsets.all(10),
@@ -256,18 +269,26 @@ class _FirmaState extends State<Firma> {
                               return Future.value(false);
                             }
                             if(value){
-                              await RevisionServices().patchFirma(context, orden, 'N', token);
+                              await _revisionServices.patchFirma(context, orden, 'N', token);
                             } else{
-                              await RevisionServices().patchFirma(context, orden, null, token);
+                              await _revisionServices.patchFirma(context, orden, null, token);
                             }
-                            setState(() {
-                              filtro = value;
-                              clienteNoDisponible = filtro;
-                              controller.disabled = !controller.disabled;
-                              controller.clear();
-                              nameController.clear();
-                              areaController.clear();
-                            });
+                            statusCode = await _revisionServices.getStatusCode();
+                            await _revisionServices.resetStatusCode(); 
+
+                            if(statusCode == 1){
+                              setState(() {
+                                filtro = value;
+                                clienteNoDisponible = filtro;
+                                controller.disabled = !controller.disabled;
+                                controller.clear();
+                                nameController.clear();
+                                areaController.clear();
+                              });
+                            }
+                            statusCode = null;
+
+                            
                           }
                         ),
                         const Text('Cliente no disponible')
@@ -297,6 +318,7 @@ class _FirmaState extends State<Firma> {
                           context: context,
                           builder: (BuildContext context) {
                             return borrarDesdeDismiss(context, index);
+                            //todo Dismis revisar
                           }
                         );
                       },
@@ -334,29 +356,35 @@ class _FirmaState extends State<Firma> {
                                 splashColor: Colors.transparent,
                                 splashRadius: 25,
                                 icon: const Icon(Icons.edit),
-                                onPressed: () async {
+                                onPressed: !estoyEditando ? () async {
+                                  estoyEditando = true;
                                   if(marcaId == 0 || (orden.estado == 'PENDIENTE' || orden.estado == 'FINALIZADA')){
                                     ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
                                       content: Text('No puede de ingresar o editar datos.'),
                                     ));
+                                    estoyEditando = false;
                                     return Future.value(false);
                                   }
                                   await _editarCliente(client[index]);
-                                },
+                                  estoyEditando = false;
+                                } : null,
                               ),
                               IconButton(
                                 splashColor: Colors.transparent,
                                 splashRadius: 25,
                                 icon: const Icon(Icons.delete),
-                                onPressed: () async {
+                                onPressed: !estoyBorrando ? () async {
+                                  estoyBorrando = true;
                                   if(marcaId == 0 || (orden.estado == 'PENDIENTE' || orden.estado == 'FINALIZADA')){
                                     ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
                                       content: Text('No puede de ingresar o editar datos.'),
                                     ));
+                                    estoyBorrando = false;
                                     return Future.value(false);
                                   }
                                   await _borrarCliente(client[index], index);
-                                },
+                                  estoyBorrando = false;
+                                } : null,
                               ),
                             ],
                           ),
@@ -389,7 +417,7 @@ class _FirmaState extends State<Firma> {
           ),
           onPressed: () async {
             Navigator.of(context).pop(true);
-            await RevisionServices().deleteRevisionFirma(context, orden, client[index], token);
+            await _revisionServices.deleteRevisionFirma(context, orden, client[index], token);
           },
           child: const Text("BORRAR")
         ),
@@ -401,7 +429,7 @@ class _FirmaState extends State<Firma> {
     exportedImage = firma ?? await controller.toPngBytes();
     firmaBytes = exportedImage as List<int>;
     md5Hash = calculateMD5(firmaBytes);
-    int? statusCode;
+    
 
     final ClienteFirma nuevaFirma = ClienteFirma(
       otFirmaId: 0,
@@ -415,16 +443,16 @@ class _FirmaState extends State<Firma> {
       firma: exportedImage
     );
 
-    RevisionServices revisionServices = RevisionServices();
+    await _revisionServices.postRevisonFirma(context, orden, nuevaFirma, token);
+    statusCode = await _revisionServices.getStatusCode();
+    await _revisionServices.resetStatusCode();
 
-    await revisionServices.postRevisonFirma(context, orden, nuevaFirma, token);
-    statusCode = await revisionServices.getStatusCode();
-
-    if(statusCode == 201){
+    if(statusCode == 1){
       _agregarCliente(nuevaFirma);
     }else{
       print('error');
     }
+    statusCode = null;
   }
 
   void completeDatosPopUp(BuildContext context) {
@@ -486,10 +514,17 @@ class _FirmaState extends State<Firma> {
                 foregroundColor: Colors.red,
               ),
               onPressed: () async {
-                await RevisionServices().deleteRevisionFirma(context, orden, cliente, token);
-                setState(() {
-                  client.removeAt(index);
-                });
+                await _revisionServices.deleteRevisionFirma(context, orden, cliente, token);
+                statusCode = await _revisionServices.getStatusCode();
+                await _revisionServices.resetStatusCode();
+
+                if (statusCode == 1){
+                  setState(() {
+                    client.removeAt(index);
+                  });
+                }
+                statusCode = null;
+                
               },
               child: const Text("BORRAR")
             ),
@@ -539,8 +574,9 @@ class _FirmaState extends State<Firma> {
               onPressed: () async {
                 firma.area = nuevoArea;
                 firma.nombre = nuevoNombre;
-
-                await RevisionServices().putRevisionFirma(context, orden, firma, token);
+                await _revisionServices.putRevisionFirma(context, orden, firma, token);
+                statusCode = await _revisionServices.getStatusCode();
+                await _revisionServices.resetStatusCode();
               },
               child: const Text('Guardar'),
             ),
@@ -548,12 +584,14 @@ class _FirmaState extends State<Firma> {
         );
       },
     ).then((result) {
-      if (result != null && result['nombre'] != null && result['area'] != null) {
-        setState(() {
-          firma.nombre = result['nombre'];
-          firma.area = result['area'];
-        });
-      }
+      if(statusCode == 1){
+        if (result != null && result['nombre'] != null && result['area'] != null) {
+          setState(() {
+            firma.nombre = result['nombre'];
+            firma.area = result['area'];
+          });
+        }
+      }     
     });
   }
 }

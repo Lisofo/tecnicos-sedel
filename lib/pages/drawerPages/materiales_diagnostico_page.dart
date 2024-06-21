@@ -26,6 +26,8 @@ class _MaterialesDiagnosticoPageState extends State<MaterialesDiagnosticoPage> {
   late List<String> savedData = [];
   List<Materiales> materiales = [];
   late List<Plaga> plagas = [];
+  final _materialesServices = MaterialesServices();
+  final _materialesDiagnisticoServices = MaterialesDiagnosticoServices();
   late List<Plaga> plagasSeleccionadas = [];
   late List<RevisionMaterial> revisionMaterialesList = [];
   late Materiales selectedMaterial = Materiales.empty();
@@ -41,6 +43,8 @@ class _MaterialesDiagnosticoPageState extends State<MaterialesDiagnosticoPage> {
   late List<ManualesMateriales> manuales = [];
   bool estaBuscando = false;
   bool borrando = false;
+  bool agrengandoMaterial = false;
+  int? statusCodeMaterial;
   bool cargoDatosCorrectamente = false;
   bool cargando = true;
 
@@ -122,7 +126,9 @@ class _MaterialesDiagnosticoPageState extends State<MaterialesDiagnosticoPage> {
             ),
             TextButton(
               child: const Text('Guardar'),
-              onPressed: () async {
+              onPressed: !agrengandoMaterial ? () async {
+                agrengandoMaterial = true;
+                setState(() {});
                 final RevisionMaterial nuevaRevisionMaterial =
                     RevisionMaterial(
                         otMaterialId: 0,
@@ -136,11 +142,17 @@ class _MaterialesDiagnosticoPageState extends State<MaterialesDiagnosticoPage> {
                         material: material,
                         lote: Lote.empty(),
                         metodoAplicacion: MetodoAplicacion.empty());
-                await MaterialesDiagnosticoServices().postRevisionMaterial(context, orden, nuevaRevisionMaterial, token);
-                revisionMaterialesList.add(nuevaRevisionMaterial);
-        
+                await _materialesDiagnisticoServices.postRevisionMaterial(context, orden, nuevaRevisionMaterial, token);
+                statusCodeMaterial = await _materialesDiagnisticoServices.getStatusCode();
+                await _materialesDiagnisticoServices.resetStatusCode();
+                if(statusCodeMaterial == 1){
+                  revisionMaterialesList.add(nuevaRevisionMaterial);
+                  statusCodeMaterial = null;
+                }
+                agrengandoMaterial = false;
                 setState(() {});
-              },
+              } : null,
+              
             ),
           ],
         );
@@ -287,7 +299,8 @@ class _MaterialesDiagnosticoPageState extends State<MaterialesDiagnosticoPage> {
                                         ),
                                         onPressed: () async {
                                           Navigator.of(context).pop(true);
-                                          await MaterialesDiagnosticoServices().deleteRevisionMaterial(context, orden,revisionMaterialesList[i],token);
+                                          await _materialesDiagnisticoServices.deleteRevisionMaterial(context, orden,revisionMaterialesList[i],token);
+                                          statusCodeMaterial = await _materialesDiagnisticoServices.getStatusCode();
                                         },
                                         child: const Text("BORRAR")
                                       ),
@@ -297,12 +310,15 @@ class _MaterialesDiagnosticoPageState extends State<MaterialesDiagnosticoPage> {
                               );
                             },
                             onDismissed: (direction) {
-                              setState(() {
-                                revisionMaterialesList.removeAt(i);
-                              });
-                              ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                                content: Text('$item borrado'),
-                              ));
+                              if(statusCodeMaterial == 1){
+                                setState(() {
+                                  revisionMaterialesList.removeAt(i);
+                                });
+                                ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                                  content: Text('$item borrado'),
+                                ));
+                              }
+                              
                             },
                             background: Container(
                               color: Colors.red,
@@ -419,13 +435,22 @@ class _MaterialesDiagnosticoPageState extends State<MaterialesDiagnosticoPage> {
   }
 
   Future<void> borrarMaterial(BuildContext context, RevisionMaterial item, int i) async {
-    ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-      content: Text('$item borrado'),
-    ));
-    await MaterialesDiagnosticoServices().deleteRevisionMaterial(context, orden, revisionMaterialesList[i], token);
-    setState(() {
-      revisionMaterialesList.removeAt(i);
-    });
+    
+    await _materialesDiagnisticoServices.deleteRevisionMaterial(context, orden, revisionMaterialesList[i], token);
+    statusCodeMaterial = await _materialesDiagnisticoServices.getStatusCode();
+    await _materialesDiagnisticoServices.resetStatusCode();
+
+    if (statusCodeMaterial == 1) {
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+        content: Text('$item borrado'),
+      ));
+      setState(() {
+        revisionMaterialesList.removeAt(i);
+      });
+    }
+    statusCodeMaterial = null;
+    borrando = false;
+    
   }
 
   bool esNumerico(String str) {
@@ -433,7 +458,11 @@ class _MaterialesDiagnosticoPageState extends State<MaterialesDiagnosticoPage> {
   }
 
   Future<void> verManual(BuildContext context, RevisionMaterial? item, Materiales? material) async {
-    manuales = material == null ? await MaterialesServices().getManualesMateriales(context, item!.material.materialId, token) : await MaterialesServices().getManualesMateriales(context, material.materialId, token);
+    try {
+      manuales = material == null ? await _materialesServices.getManualesMateriales(context, item!.material.materialId, token) : await _materialesServices.getManualesMateriales(context, material.materialId, token);
+    } catch (e) {
+      print(e);
+    }
     showDialog(
       context: context, 
       builder: (BuildContext context) {
@@ -572,10 +601,16 @@ class _MaterialesDiagnosticoPageState extends State<MaterialesDiagnosticoPage> {
                     lote: Lote.empty(),
                     metodoAplicacion: MetodoAplicacion.empty()
                   );
-                await MaterialesDiagnosticoServices().putRevisionMaterial(context, orden, nuevaRevisionMaterial, token);
-                comentarioController.text = '';
-                cantidadController.text = '';
-                revisionMaterialesList = await MaterialesDiagnosticoServices().getRevisionMateriales(context, orden, token);
+                await _materialesDiagnisticoServices.putRevisionMaterial(context, orden, nuevaRevisionMaterial, token);
+                statusCodeMaterial = await _materialesDiagnisticoServices.getStatusCode();
+                await _materialesDiagnisticoServices.resetStatusCode();
+
+                if(statusCodeMaterial == 1){
+                  comentarioController.text = '';
+                  cantidadController.text = '';
+                  revisionMaterialesList = await _materialesDiagnisticoServices.getRevisionMateriales(context, orden, token);
+                }
+                
                 setState(() {});
               },
             ),

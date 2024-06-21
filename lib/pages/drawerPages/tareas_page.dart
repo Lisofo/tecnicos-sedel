@@ -21,6 +21,7 @@ class TareasPage extends StatefulWidget {
 class _TareasPageState extends State<TareasPage> {
   List<Tarea> tareas = [];
   late String token = '';
+  final _revisionServices = RevisionServices();
   final ScrollController _scrollController = ScrollController();
   List<Tarea> tareasSeleccionadas = [];
   Tarea selectedTarea = Tarea.empty();
@@ -31,6 +32,8 @@ class _TareasPageState extends State<TareasPage> {
   bool cargoDatosCorrectamente = false;
   bool cargando = true;
   bool agregandoTarea = false;
+  int? statusCodeTareas;
+  bool borrando = false;
 
   @override
   void initState() {
@@ -142,15 +145,16 @@ class _TareasPageState extends State<TareasPage> {
                       }
                       if (agregarTarea) {
                         await posteoRevisionTarea(context);
+                        agregandoTarea = false;
                         setState(() {});
                       }else {
                         ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
                           content: Text('Seleccione una tarea'),
                         ));
-                        agregarTarea = false;
+                        agregandoTarea = false;
                         return Future.value(false);
                       }
-                      agregarTarea = false;
+                      agregandoTarea = false;
                       setState(() {});
                     } : null ,
                     disabled: agregandoTarea,
@@ -197,7 +201,9 @@ class _TareasPageState extends State<TareasPage> {
                                   ),
                                   onPressed: () async {
                                     Navigator.of(context).pop(true);
-                                    await RevisionServices().deleteRevisionTarea(context, orden, revisionTareasList[i], token);
+                                    await _revisionServices.deleteRevisionTarea(context, orden, revisionTareasList[i], token);
+                                    statusCodeTareas = await _revisionServices.getStatusCode();
+                                    await _revisionServices.resetStatusCode();
                                   },
                                   child: const Text("BORRAR")
                                 ),
@@ -207,12 +213,15 @@ class _TareasPageState extends State<TareasPage> {
                         );
                       },
                       onDismissed: (direction) async {
-                        setState(() {
-                          revisionTareasList.removeAt(i);
-                        });
-                        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                          content: Text('La tarea $item ha sido borrada'),
-                        ));
+                        if(statusCodeTareas == 1){
+                          setState(() {
+                            revisionTareasList.removeAt(i);
+                          });
+                          ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                            content: Text('La tarea $item ha sido borrada'),
+                          ));
+                        }
+                        
                       },
                       background: Container(
                         color: Colors.red,
@@ -252,9 +261,11 @@ class _TareasPageState extends State<TareasPage> {
                                               style: TextButton.styleFrom(
                                                 foregroundColor: Colors.red,
                                               ),
-                                              onPressed: () async {
+                                              onPressed: !borrando ? () async {
+                                                borrando = true;
+                                                setState(() {});
                                                 await borrarTarea(context, i);
-                                              },
+                                              } : null,
                                               child: const Text("BORRAR")),
                                         ],
                                       );
@@ -275,13 +286,20 @@ class _TareasPageState extends State<TareasPage> {
   }
 
   Future<void> borrarTarea(BuildContext context, int i) async {
-    ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-      content: Text('La tarea ${revisionTareasList[i].descripcion} ha sido borrada'),
-    ));
-    await RevisionServices().deleteRevisionTarea(context, orden, revisionTareasList[i], token);
-    setState(() {
-      revisionTareasList.removeAt(i);
-    });
+    await _revisionServices.deleteRevisionTarea(context, orden, revisionTareasList[i], token);
+    statusCodeTareas = await _revisionServices.getStatusCode();
+    await _revisionServices.resetStatusCode();
+    if(statusCodeTareas == 1){
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+        content: Text('La tarea ${revisionTareasList[i].descripcion} ha sido borrada'),
+      ));
+      
+      setState(() {
+        revisionTareasList.removeAt(i);
+      });
+    }
+    statusCodeTareas = null;
+    borrando = false;
   }
 
   Future<void> posteoRevisionTarea(BuildContext context) async {
@@ -293,12 +311,19 @@ class _TareasPageState extends State<TareasPage> {
         codTarea: selectedTarea.codTarea,
         descripcion: selectedTarea.descripcion,
         comentario: '');
-    await RevisionServices().postRevisionTarea(context, orden, selectedTarea.tareaId, nuevaTarea, token);
-    revisionTareasList.add(nuevaTarea);
-    _scrollController.animateTo(
-      _scrollController.position.maxScrollExtent + 200,
-      duration: const Duration(milliseconds: 500),
-      curve: Curves.easeInOut,
-    );
+    await _revisionServices.postRevisionTarea(context, orden, selectedTarea.tareaId, nuevaTarea, token);
+    statusCodeTareas = await _revisionServices.getStatusCode();
+    await _revisionServices.resetStatusCode();
+    if(statusCodeTareas == 1){
+      revisionTareasList.add(nuevaTarea);
+      _scrollController.animateTo(
+        _scrollController.position.maxScrollExtent + 200,
+        duration: const Duration(milliseconds: 500),
+        curve: Curves.easeInOut,
+      );
+      statusCodeTareas = null;
+    }
+    
+    
   }
 }

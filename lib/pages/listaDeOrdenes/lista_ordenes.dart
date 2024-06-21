@@ -51,6 +51,8 @@ class _ListaOrdenesState extends State<ListaOrdenes> {
 
   // 2. Método para manejar la actualización de datos
   Future<void> _refreshData() async {
+    ordenes = [];
+    setState(() {});
     await cargarDatos();
   }
 

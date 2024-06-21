@@ -58,6 +58,10 @@ class MarcasServices {
     );
   }
 
+  Future<void> resetStatusCode() async {
+    statusCode = null;
+  }
+
   Future<int?> getStatusCode() async {
     statusCode = null;
     return statusCode;

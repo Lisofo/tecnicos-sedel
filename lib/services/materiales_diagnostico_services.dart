@@ -62,7 +62,6 @@ class MaterialesDiagnosticoServices {
   }
 
   Future<int?> getStatusCode() async {
-    statusCode = null;
     return statusCode;
   }
 
@@ -395,6 +394,10 @@ class MaterialesDiagnosticoServices {
         } 
       } 
     }
+  }
+
+  Future<void> resetStatusCode() async {
+    statusCode = null;
   }
 
   Future deleteRevisionMaterial(BuildContext context, Orden orden, RevisionMaterial revisionMaterial, String token) async {

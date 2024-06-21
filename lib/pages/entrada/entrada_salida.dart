@@ -32,6 +32,9 @@ class _EntradSalidaState extends State<EntradSalida> {
   bool ejecutandoSalida = false;
   late int tecnicoId = 0;
   late String token = '';
+  final _marcasServices = MarcasServices();
+  final _ubicacionServices = UbicacionServices();
+  int? statusCode;
 
   @override
   void initState() {
@@ -175,7 +178,9 @@ class _EntradSalidaState extends State<EntradSalida> {
     ubicacion.fecha = DateTime.now();
     ubicacion.usuarioId = uId;
     ubicacion.ubicacion = _currentPosition;
-    await UbicacionServices().postUbicacion(context, ubicacion, token);
+    await _ubicacionServices.postUbicacion(context, ubicacion, token);
+    statusCode = await _ubicacionServices.getStatusCode();
+    await _ubicacionServices.resetStatusCode();
   }
 
   marcarEntrada() async {
@@ -183,19 +188,26 @@ class _EntradSalidaState extends State<EntradSalida> {
       ejecutandoEntrada = true;
       if (marca.marcaId == 0) {
         await obtenerUbicacion();
-        int ubicacionId = ubicacion.ubicacionId;
-        if(ubicacionId != 0){
-          marca = Marca.empty();
-          marca.tecnicoId = tecnicoId;
-          marca.desde = DateTime.now();
-          marca.ubicacionId = ubicacionId;
-          await MarcasServices().postMarca(context, marca, token);
-          guardarObjeto(marca);
+        if (statusCode == 1){
+          int ubicacionId = ubicacion.ubicacionId;
+          if(ubicacionId != 0){
+            marca = Marca.empty();
+            marca.tecnicoId = tecnicoId;
+            marca.desde = DateTime.now();
+            marca.ubicacionId = ubicacionId;
+            await _marcasServices.postMarca(context, marca, token);
+            statusCode = await _marcasServices.getStatusCode();
+            await _marcasServices.getStatusCode();
+            if (statusCode == 1){
+              guardarObjeto(marca);
+            }
+          }
         }
-        
+        statusCode = null;
         setState(() {});
       } else {
         MarcasServices.showDialogs(context, 'Ya tiene una entrada inciada', false, false);
+        statusCode = null;
       }
       print('hola entrada');
       ejecutandoEntrada = false;
@@ -234,13 +246,21 @@ class _EntradSalidaState extends State<EntradSalida> {
         ordenesEnProceso = ordenesEnProceso.where((orden) => orden.estado == 'EN PROCESO').toList();
         if (ordenesEnProceso.isEmpty && confirmacion == true) {
           await obtenerUbicacion();
-          int ubicacionId = ubicacion.ubicacionId;
-          marca.hasta = DateTime.now();
-          marca.ubicacionIdHasta = ubicacionId;
-          await MarcasServices().putMarca(context, marca, token);
-          Provider.of<OrdenProvider>(context, listen: false).setMarca(0);
-          _borrarIdLocal();
-          setState(() {});
+          if (statusCode == 1){
+            int ubicacionId = ubicacion.ubicacionId;
+            marca.hasta = DateTime.now();
+            marca.ubicacionIdHasta = ubicacionId;
+            await _marcasServices.putMarca(context, marca, token);
+            statusCode = await _marcasServices.getStatusCode();
+            _marcasServices.resetStatusCode();
+            if (statusCode == 1) {
+              Provider.of<OrdenProvider>(context, listen: false).setMarca(0);
+              _borrarIdLocal();
+            }
+            statusCode = null;
+            setState(() {});
+          }
+          
         } else if(ordenesEnProceso.isNotEmpty){
           showDialog(
             context: context,
