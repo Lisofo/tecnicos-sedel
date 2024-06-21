@@ -64,14 +64,6 @@ class UbicacionServices {
     );
   }
 
-  Future<int?> getStatusCode() async {
-    return statusCode;
-  }
-
-  Future<void> resetStatusCode() async {
-    statusCode = null;
-  }
-
   Future postUbicacion(BuildContext context, Ubicacion ubicacion, String token) async {
     try {
       String link = '${apiUrl}api/v1/ubicaciones';

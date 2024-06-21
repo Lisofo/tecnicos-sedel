@@ -115,9 +115,6 @@ class OrdenServices {
     return statusCode;
   }
 
-  Future<void> resetStatusCode() async {
-    statusCode = null;
-  }
 
   Future patchOrden(BuildContext context, Orden orden, String estado, int ubicacionId, String token) async {
     String link = apiLink;

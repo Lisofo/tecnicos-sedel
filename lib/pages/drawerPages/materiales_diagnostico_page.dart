@@ -125,7 +125,6 @@ class _MaterialesDiagnosticoPageState extends State<MaterialesDiagnosticoPage> {
               },
             ),
             TextButton(
-              child: const Text('Guardar'),
               onPressed: !agrengandoMaterial ? () async {
                 agrengandoMaterial = true;
                 setState(() {});
@@ -152,6 +151,7 @@ class _MaterialesDiagnosticoPageState extends State<MaterialesDiagnosticoPage> {
                 agrengandoMaterial = false;
                 setState(() {});
               } : null,
+              child: const Text('Guardar'),
               
             ),
           ],
