@@ -35,6 +35,7 @@ class _EntradSalidaState extends State<EntradSalida> {
   final _marcasServices = MarcasServices();
   final _ubicacionServices = UbicacionServices();
   int? statusCode;
+  bool marcando = false;
 
   @override
   void initState() {
@@ -115,26 +116,35 @@ class _EntradSalidaState extends State<EntradSalida> {
                 height: 20,
               ),
               CustomButton(
-                onPressed: marca.marcaId == 0 ? () => marcarEntrada() : null,
+                onPressed: marca.marcaId == 0 ? () {
+                  marcando = true;
+                  setState(() {});
+                  marcarEntrada();
+                } : null,
                 text: 'Marcar entrada',
-                disabled: marca.marcaId != 0,
+                disabled: marca.marcaId != 0 || marcando,
               ),
               const SizedBox(
                 height: 20,
               ),
               CustomButton(
-                onPressed: marca.marcaId != 0 ? () => marcarSalida() : null,
+                onPressed: marca.marcaId != 0 ? () {
+                  marcando = true;
+                  setState(() {});
+                  marcarSalida();
+                } : null,
                 text: 'Marcar Salida',
-                disabled: marca.marcaId == 0,
+                disabled: marca.marcaId == 0 || marcando,
               ),
               const SizedBox(
                 height: 30,
               ),
               CustomButton(
-                onPressed: () {
+                onPressed: !marcando ? () {
                   router.push('/listaOrdenes');
-                },
+                } : null ,
                 text: 'Revisar Ordenes',
+                disabled: marcando,
               ),
               const SizedBox(
                 height: 100,
@@ -212,6 +222,7 @@ class _EntradSalidaState extends State<EntradSalida> {
       print('hola entrada');
       ejecutandoEntrada = false;
     }
+    marcando = false;
   }
 
   marcarSalida() async {
@@ -229,6 +240,7 @@ class _EntradSalidaState extends State<EntradSalida> {
               actions: <Widget>[
                 TextButton(
                   onPressed: () {
+                    marcando = false;
                     Navigator.of(context).pop(false);
                   },
                   child: const Text('Cancelar'),
@@ -287,6 +299,7 @@ class _EntradSalidaState extends State<EntradSalida> {
       print('chau salida');
       ejecutandoSalida = false;
     }
+    marcando = false;
   }
 
   Future<void> getLocation() async {
