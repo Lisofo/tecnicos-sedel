@@ -64,7 +64,7 @@ class _ListaOrdenesState extends State<ListaOrdenes> {
       Provider.of<OrdenProvider>(context, listen: false).setOrdenes(ordenes);
       setState(() {});
     } catch (e) {
-      print(e);
+      ordenes = [];
     }
   }
 
