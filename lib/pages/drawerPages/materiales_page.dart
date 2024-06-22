@@ -413,22 +413,28 @@ class _MaterialesPageState extends State<MaterialesPage> {
                                     IconButton(
                                       onPressed: !estaBuscando
                                         ? () async {
+                                          estaBuscando = true;
+                                          
+                                          setState(() {});
                                             if (marcaId == 0 || (orden.estado == 'PENDIENTE' || orden.estado == 'FINALIZADA')) {
                                               ScaffoldMessenger.of(context).showSnackBar(
                                                 const SnackBar(
                                                   content: Text('No puede ingresar o editar datos.'),
                                                 ),
                                               );
+                                              estaBuscando = false;
                                               return Future.value(false);
                                             }
                                             try {
                                               plagas = await PlagaServices().getPlagas(context, token);
                                               lotes = await MaterialesServices().getLotes(context, item.material.materialId, token);
-                                              metodosAplicacion = await MaterialesServices().getMetodosAplicacion(context, token);  
+                                              metodosAplicacion = await MaterialesServices().getMetodosAplicacion(context, token);
+                                              estaBuscando = false;  
                                             } catch (e) {
                                               plagas = [];
                                               lotes = [];
                                               metodosAplicacion = [];
+                                              estaBuscando = false;
                                             }
                                             if(plagas.isNotEmpty && lotes.isNotEmpty && metodosAplicacion.isNotEmpty){
                                               setState(() {
@@ -439,7 +445,6 @@ class _MaterialesPageState extends State<MaterialesPage> {
                                                 estaBuscando = resultado;
                                               });
                                             }
-                                            
                                           }
                                         : null,
                                       icon: const Icon(Icons.edit)
