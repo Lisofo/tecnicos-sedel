@@ -93,12 +93,14 @@ class _PtosInspeccionPageState extends State<PtosInspeccionPage> {
       orden = context.read<OrdenProvider>().orden;
       marcaId = context.read<OrdenProvider>().marcaId;
       if(orden.otRevisionId != 0) {
-        ptosInspeccion = await PtosInspeccionServices().getPtosInspeccion(context, orden, token);
+        ptosInspeccion = await _ptosInspeccionServices.getPtosInspeccion(context, orden, token);
+        statusCodeRevision = await _ptosInspeccionServices.getStatusCode();
+        await _ptosInspeccionServices.resetStatusCode();
       }
       tiposDePuntos = await getTipos();
       plagasObjetivo = await PlagaServices().getPlagasObjetivo(context, token);
       Provider.of<OrdenProvider>(context, listen: false).setTipoPTI(selectedTipoPto);
-      if (ptosInspeccion.isNotEmpty){
+      if (statusCodeRevision == 1){
         cargoDatosCorrectamente = true;
       }
       cargando = false;
@@ -510,6 +512,7 @@ class _PtosInspeccionPageState extends State<PtosInspeccionPage> {
         router.push(botones.ruta);
       break;
       case 'Sin Actividad':
+        router.pop();
         marcarPISinActividad(1, '');
       break;
       case 'Desinstalado':
@@ -550,7 +553,6 @@ class _PtosInspeccionPageState extends State<PtosInspeccionPage> {
                   onPressed: () {
                     if(!subiendoAcciones){
                       subiendoAcciones = true;
-                      router.pop(context);
                       if (botones.text == 'Desinstalado') {
                         marcarPISinActividad(4, comentarioController.text);
                       } else {
@@ -669,7 +671,6 @@ class _PtosInspeccionPageState extends State<PtosInspeccionPage> {
                     onPressed: () async {
                       if(!subiendoAcciones){
                         subiendoAcciones = true;
-                        router.pop(context);
                         await marcarPINuevo(5, zonaSeleccionada, sectorController.text, comentarioController.text);
                       }
                     },
@@ -743,7 +744,6 @@ class _PtosInspeccionPageState extends State<PtosInspeccionPage> {
                   onPressed: () async {
                     if(!subiendoAcciones){
                       subiendoAcciones = true;
-                      router.pop(context);
                       await marcarPITraslado(6, zonaSeleccionada, sectorController.text, comentarioController.text);
                     }
                   },
@@ -763,7 +763,7 @@ class _PtosInspeccionPageState extends State<PtosInspeccionPage> {
       puntosSeleccionados[i].descTipoPuntoInspeccion = '';
       puntosSeleccionados[i].idPIAccion = idPIAccion;
       puntosSeleccionados[i].piAccionId = idPIAccion;
-      puntosSeleccionados[i].codAccion = idPIAccion.toString();
+      puntosSeleccionados[i].codAccion = '';
       puntosSeleccionados[i].descPiAccion = '';
       puntosSeleccionados[i].comentario = comentario;
       puntosSeleccionados[i].materiales = [];
@@ -772,7 +772,6 @@ class _PtosInspeccionPageState extends State<PtosInspeccionPage> {
       puntosSeleccionados[i].trasladoNuevo = [];
     }
     await postAcciones(puntosSeleccionados);
-    await actualizarDatos();
     limpiarDatos();
     subiendoAcciones = false;
   }
@@ -788,8 +787,8 @@ class _PtosInspeccionPageState extends State<PtosInspeccionPage> {
       puntosSeleccionados[i].zona = zonaSeleccionada.codZona;
       puntosSeleccionados[i].sector = sector;
       puntosSeleccionados[i].idPIAccion = idPIAccion;
-      puntosSeleccionados[i].piAccionId = 6;
-      puntosSeleccionados[i].codAccion = '6';
+      puntosSeleccionados[i].piAccionId = idPIAccion;
+      puntosSeleccionados[i].codAccion = '';
       puntosSeleccionados[i].descPiAccion = '';
       puntosSeleccionados[i].comentario = comentario;
       puntosSeleccionados[i].materiales = [];
@@ -798,7 +797,6 @@ class _PtosInspeccionPageState extends State<PtosInspeccionPage> {
       puntosSeleccionados[i].trasladoNuevo = [];
     }
     await postAcciones(puntosSeleccionados);
-    await actualizarDatos();
     limpiarDatos();
     subiendoAcciones = false;
   }
@@ -820,7 +818,7 @@ class _PtosInspeccionPageState extends State<PtosInspeccionPage> {
       sector: sector,
       idPIAccion: idPIAccion,
       piAccionId: idPIAccion,
-      codAccion: idPIAccion.toString(),
+      codAccion: '',
       descPiAccion: '',
       comentario: comentario,
       materiales: [],
@@ -857,9 +855,13 @@ class _PtosInspeccionPageState extends State<PtosInspeccionPage> {
   }
 
   Future<void> actualizarDatos() async {
-    ptosInspeccion = await _ptosInspeccionServices.getPtosInspeccion(context, orden, token);
-    plagasObjetivo = await PlagaServices().getPlagasObjetivo(context, token);
-
+    try {
+      ptosInspeccion = await _ptosInspeccionServices.getPtosInspeccion(context, orden, token);
+      plagasObjetivo = await PlagaServices().getPlagasObjetivo(context, token);  
+    } catch (e) {
+      ptosInspeccion = [];
+      plagasObjetivo = [];
+    }
     setState(() {});
   }
 
@@ -868,8 +870,8 @@ class _PtosInspeccionPageState extends State<PtosInspeccionPage> {
     statusCodeRevision = await _ptosInspeccionServices.getStatusCode();
     await _ptosInspeccionServices.resetStatusCode();
     if(statusCodeRevision == 1) {
+      await PtosInspeccionServices.showDialogs(context, puntosSeleccionados.length == 1 ? 'Acción borrada' : 'Acciones borradas', true, false);
       await actualizarDatos();
-      await PtosInspeccionServices.showDialogs(context, puntosSeleccionados.length == 1 ? 'Accion borrada' : 'Acciones borradas', true, false);
     }
     statusCodeRevision = null;
   }
@@ -880,7 +882,7 @@ class _PtosInspeccionPageState extends State<PtosInspeccionPage> {
     await _ptosInspeccionServices.resetStatusCode();
     if(statusCodeRevision == 1) {
       await actualizarDatos();
-      await PtosInspeccionServices.showDialogs(context, acciones.length == 1 ? 'Accion creada' : 'Acciones creadas', true, false);
+      await PtosInspeccionServices.showDialogs(context, acciones.length == 1 ? 'Acción creada' : 'Acciones creadas', true, false);
     }
     statusCodeRevision = null;
   }

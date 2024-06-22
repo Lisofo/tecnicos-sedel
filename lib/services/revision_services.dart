@@ -678,12 +678,12 @@ class RevisionServices {
     }
   }
 
-  Future putRevisionFirma(BuildContext context, Orden orden, ClienteFirma revisionFirma, String token) async {
+  Future putRevisionFirma(BuildContext context, Orden orden, ClienteFirma revisionFirma, String nombre, String area, String token) async {
     String link = apiLink;
-    link += 'api/v1/ordenes/${orden.ordenTrabajoId}/revisiones/${orden.otRevisionId.toString()}/firmas/${revisionFirma.otFirmaId}';
+    link += 'api/v1/ordenes/${orden.ordenTrabajoId}/revisiones/${orden.otRevisionId}/firmas/${revisionFirma.otFirmaId}';
     var data = ({
-      "nombre": revisionFirma.nombre,
-      "area": revisionFirma.area,
+      "nombre": nombre,
+      "area": area,
     });
     try {
       var headers = {'Authorization': token};

@@ -123,7 +123,7 @@ class PlagaServices {
   }
 
   Future getPlagasObjetivo(BuildContext context, String token) async {
-    String link = '${apiUrl}api/v1/plagas-objetivo/';
+    String link = '${apiUrl}api/v1/plagas-objetivo/?sort=descripcion';
 
     try {
       var headers = {'Authorization': token};

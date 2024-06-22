@@ -65,6 +65,7 @@ class _ObservacionesPageState extends State<ObservacionesPage> {
         cargoDatosCorrectamente = true;
       } else {
         observacion = Observacion.empty();
+        cargoDatosCorrectamente = true;
       }
       cargando = false;
     } catch (e) {

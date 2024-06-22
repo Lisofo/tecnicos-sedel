@@ -31,6 +31,14 @@ class TareasServices {
     );
   }
 
+  Future<int?> getStatusCode() async {
+    return statusCode;
+  }
+
+  Future<void> resetStatusCode() async {
+    statusCode = null;
+  }
+
   Future getTareas(BuildContext context, String token) async {
     String link = '${apiLink}api/v1/tareas/?sort=descripcion';
 

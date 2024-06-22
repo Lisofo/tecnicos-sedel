@@ -76,15 +76,8 @@ class _MaterialesPageState extends State<MaterialesPage> {
   }
 
   Future<bool> _showMaterialDetails(BuildContext context, Materiales material) async {
-    try {
-      plagas = await PlagaServices().getPlagas(context, token);
-      lotes = await _materialesServices.getLotes(context, selectedMaterial.materialId, token);
-      metodosAplicacion = await _materialesServices.getMetodosAplicacion(context, token);
-      selectedMetodo = MetodoAplicacion.empty();
-      selectedLote = Lote.empty();  
-    } catch (e) {
-      e;
-    }
+    selectedMetodo = MetodoAplicacion.empty();
+    selectedLote = Lote.empty();  
     showDialog(
       context: context,
       builder: (BuildContext context) {
@@ -306,10 +299,23 @@ class _MaterialesPageState extends State<MaterialesPage> {
                       selectedMaterial = newValue!;
                       estaBuscando = true;
                     });
-                    bool resultado = await _showMaterialDetails(context, selectedMaterial);
-                    setState(() {
-                      estaBuscando = resultado;
-                    });
+                    try {
+                      plagas = await PlagaServices().getPlagas(context, token);
+                      lotes = await MaterialesServices().getLotes(context, selectedMaterial.materialId, token);
+                      metodosAplicacion = await MaterialesServices().getMetodosAplicacion(context, token);  
+                    } catch (e) {
+                      plagas = [];
+                      lotes = [];
+                      metodosAplicacion = [];
+                      estaBuscando = false;
+                      setState(() {});
+                    }
+                    if(plagas.isNotEmpty && lotes.isNotEmpty && metodosAplicacion.isNotEmpty){
+                      bool resultado = await _showMaterialDetails(context, selectedMaterial);
+                      setState(() {
+                        estaBuscando = resultado;
+                      });
+                    }
                   },
                 )
               ),
@@ -415,13 +421,25 @@ class _MaterialesPageState extends State<MaterialesPage> {
                                               );
                                               return Future.value(false);
                                             }
-                                            setState(() {
-                                              estaBuscando = true;
-                                            });
-                                            bool resultado = await editMaterial(context, item);
-                                            setState(() {
-                                              estaBuscando = resultado;
-                                            });
+                                            try {
+                                              plagas = await PlagaServices().getPlagas(context, token);
+                                              lotes = await MaterialesServices().getLotes(context, item.material.materialId, token);
+                                              metodosAplicacion = await MaterialesServices().getMetodosAplicacion(context, token);  
+                                            } catch (e) {
+                                              plagas = [];
+                                              lotes = [];
+                                              metodosAplicacion = [];
+                                            }
+                                            if(plagas.isNotEmpty && lotes.isNotEmpty && metodosAplicacion.isNotEmpty){
+                                              setState(() {
+                                                estaBuscando = true;
+                                              });
+                                              bool resultado = await editMaterial(context, item);
+                                              setState(() {
+                                                estaBuscando = resultado;
+                                              });
+                                            }
+                                            
                                           }
                                         : null,
                                       icon: const Icon(Icons.edit)
@@ -603,10 +621,7 @@ class _MaterialesPageState extends State<MaterialesPage> {
     } else {
       selectedLote = Lote.empty();
       selectedMetodo = MetodoAplicacion.empty();
-    }
-    plagas = await PlagaServices().getPlagas(context, token);
-    lotes = await MaterialesServices().getLotes(context, material.material.materialId, token);
-    metodosAplicacion = await MaterialesServices().getMetodosAplicacion(context, token);
+    }   
 
     showDialog(
       context: context,
@@ -738,7 +753,10 @@ class _MaterialesPageState extends State<MaterialesPage> {
                       areaController.text = '';
                       cantidadController.text = '';
                       revisionMaterialesList = await _materialesServices.getRevisionMateriales(context, orden, token);
-                    }
+                      plagas = [];
+                      lotes = [];
+                      metodosAplicacion = [];
+                    }                   
                     setState(() {});
                   } else {
                     showDialog(

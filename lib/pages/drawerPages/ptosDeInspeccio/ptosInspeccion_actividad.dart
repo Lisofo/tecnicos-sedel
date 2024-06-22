@@ -1,4 +1,4 @@
-// ignore_for_file: file_names, avoid_print, use_build_context_synchronously, non_constant_identifier_names
+  // ignore_for_file: file_names, avoid_print, use_build_context_synchronously, non_constant_identifier_names
 
 import 'package:app_tec_sedel/models/materialesTPI.dart';
 import 'package:app_tec_sedel/models/orden.dart';
@@ -47,7 +47,11 @@ class _PtosInspeccionActividadState extends State<PtosInspeccionActividad> {
   bool cargoDatosCorrectamente = false;
   bool cargando = true;
   final _ptosInspeccionServices = PtosInspeccionServices();
+  final _tareasServices = TareasServices();
+  final _materialesServices = MaterialesServices();
   int? statusCodeRevision;
+  int? statusCodeTareas;
+  int? statusCodeMateriales;
 
   @override
   void initState() {
@@ -69,8 +73,12 @@ class _PtosInspeccionActividadState extends State<PtosInspeccionActividad> {
       final String modo = context.read<OrdenProvider>().modo;
       tPISeleccionado = context.read<OrdenProvider>().tipoPtosInspeccion;
       ptoInspeccionSeleccionados = context.read<OrdenProvider>().puntosSeleccionados;
-      tareas = await TareasServices().getTareasXTPI(context, tPISeleccionado, modo, token);
-      materiales = await MaterialesServices().getMaterialesXTPI(context, tPISeleccionado, token);
+      tareas = await _tareasServices.getTareasXTPI(context, tPISeleccionado, modo, token);
+      statusCodeTareas = await _tareasServices.getStatusCode();
+      await _tareasServices.resetStatusCode();
+      materiales = await _materialesServices.getMaterialesXTPI(context, tPISeleccionado, token);
+      statusCodeMateriales = await _materialesServices.getStatusCode();
+      await _materialesServices.resetStatusCode();
 
       if (orden.estado == "EN PROCESO" && marcaId != 0) {
         isReadOnly = false;
@@ -85,8 +93,10 @@ class _PtosInspeccionActividadState extends State<PtosInspeccionActividad> {
         materialesSeleccionados = ptoInspeccionSeleccionados[0].materiales;
         plagasSeleccionadas = ptoInspeccionSeleccionados[0].plagas;
       }
-      if (materiales.isNotEmpty && tareas.isNotEmpty){
+      if (statusCodeMateriales == 1 && statusCodeTareas == 1){
         cargoDatosCorrectamente = true;
+        statusCodeMateriales = null;
+        statusCodeTareas = null;
       }
       cargando = false;
     }catch (e) {
@@ -460,6 +470,10 @@ class _PtosInspeccionActividadState extends State<PtosInspeccionActividad> {
     statusCodeRevision = await _ptosInspeccionServices.getStatusCode();
     await _ptosInspeccionServices.resetStatusCode();
     if(statusCodeRevision == 1) {
+      for (var i = 0; i < ptoInspeccionSeleccionados.length; i++) {
+        ptoInspeccionSeleccionados[i].seleccionado = false;
+        Provider.of<OrdenProvider>(context, listen: false).actualizarPunto(i, ptoInspeccionSeleccionados[i]); 
+      }
       await PtosInspeccionServices.showDialogs(context, acciones.length == 1 ? 'Accion creada' : 'Acciones creadas', true, true);
     }
   }

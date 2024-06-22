@@ -367,6 +367,7 @@ class _FirmaState extends State<Firma> {
                                   }
                                   await _editarCliente(client[index]);
                                   estoyEditando = false;
+                                  setState(() {});
                                 } : null,
                               ),
                               IconButton(
@@ -572,9 +573,7 @@ class _FirmaState extends State<Firma> {
             ),
             TextButton(
               onPressed: () async {
-                firma.area = nuevoArea;
-                firma.nombre = nuevoNombre;
-                await _revisionServices.putRevisionFirma(context, orden, firma, token);
+                await _revisionServices.putRevisionFirma(context, orden, firma, nuevoNombre, nuevoArea, token);
                 statusCode = await _revisionServices.getStatusCode();
                 await _revisionServices.resetStatusCode();
               },

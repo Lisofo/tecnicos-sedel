@@ -272,7 +272,6 @@ class _EntradSalidaState extends State<EntradSalida> {
             statusCode = null;
             setState(() {});
           }
-          
         } else if(ordenesEnProceso.isNotEmpty){
           showDialog(
             context: context,
@@ -284,6 +283,7 @@ class _EntradSalidaState extends State<EntradSalida> {
                 actions: [
                   TextButton(
                     onPressed: () {
+                      marcando = false;
                       Navigator.of(context).pop();
                     },
                     child: const Text('OK')
@@ -292,6 +292,9 @@ class _EntradSalidaState extends State<EntradSalida> {
               );
             }
           );
+        } else {
+          marcando = false;
+          setState(() {});
         }
       } else {
         MarcasServices.showDialogs(context, 'Marque entrada para luego marcar salida', false, false);
@@ -300,6 +303,7 @@ class _EntradSalidaState extends State<EntradSalida> {
       ejecutandoSalida = false;
     }
     marcando = false;
+    setState(() {});
   }
 
   Future<void> getLocation() async {
