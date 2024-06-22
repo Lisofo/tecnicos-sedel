@@ -576,6 +576,10 @@ class _FirmaState extends State<Firma> {
                 await _revisionServices.putRevisionFirma(context, orden, firma, nuevoNombre, nuevoArea, token);
                 statusCode = await _revisionServices.getStatusCode();
                 await _revisionServices.resetStatusCode();
+                if(statusCode == 1){
+                  firma.nombre = nuevoNombre;
+                  firma.area = nuevoArea;
+                }
               },
               child: const Text('Guardar'),
             ),

@@ -512,7 +512,6 @@ class _PtosInspeccionPageState extends State<PtosInspeccionPage> {
         router.push(botones.ruta);
       break;
       case 'Sin Actividad':
-        router.pop();
         marcarPISinActividad(1, '');
       break;
       case 'Desinstalado':
@@ -558,6 +557,7 @@ class _PtosInspeccionPageState extends State<PtosInspeccionPage> {
                       } else {
                         marcarPISinActividad(7, comentarioController.text);
                       }
+                      router.pop();
                     }
                   },
                 ),
@@ -796,7 +796,7 @@ class _PtosInspeccionPageState extends State<PtosInspeccionPage> {
       puntosSeleccionados[i].tareas = [];
       puntosSeleccionados[i].trasladoNuevo = [];
     }
-    await postAcciones(puntosSeleccionados);
+    await postTraslado(puntosSeleccionados);
     limpiarDatos();
     subiendoAcciones = false;
   }
@@ -840,7 +840,7 @@ class _PtosInspeccionPageState extends State<PtosInspeccionPage> {
     if(statusCodeRevision == 1) {
       await actualizarDatos();
       limpiarDatos();
-      PtosInspeccionServices.showDialogs(context, 'Punto guardado', true, false);
+      PtosInspeccionServices.showDialogs(context, 'Punto guardado', true, true);
     }
     statusCodeRevision = null;
     subiendoAcciones = false;
@@ -883,6 +883,19 @@ class _PtosInspeccionPageState extends State<PtosInspeccionPage> {
     if(statusCodeRevision == 1) {
       await actualizarDatos();
       await PtosInspeccionServices.showDialogs(context, acciones.length == 1 ? 'Acción creada' : 'Acciones creadas', true, false);
+      
+    }
+    statusCodeRevision = null;
+  }
+
+  Future postTraslado(List<RevisionPtoInspeccion> acciones) async {
+    await _ptosInspeccionServices.postAcciones(context, orden, acciones, token);
+    statusCodeRevision = await _ptosInspeccionServices.getStatusCode();
+    await _ptosInspeccionServices.resetStatusCode();
+    if(statusCodeRevision == 1) {
+      await actualizarDatos();
+      await PtosInspeccionServices.showDialogs(context, acciones.length == 1 ? 'Acción creada' : 'Acciones creadas', true, true);
+      
     }
     statusCodeRevision = null;
   }
