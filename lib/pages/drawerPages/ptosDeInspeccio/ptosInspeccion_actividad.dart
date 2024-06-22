@@ -470,10 +470,6 @@ class _PtosInspeccionActividadState extends State<PtosInspeccionActividad> {
     statusCodeRevision = await _ptosInspeccionServices.getStatusCode();
     await _ptosInspeccionServices.resetStatusCode();
     if(statusCodeRevision == 1) {
-      for (var i = 0; i < ptoInspeccionSeleccionados.length; i++) {
-        ptoInspeccionSeleccionados[i].seleccionado = false;
-        Provider.of<OrdenProvider>(context, listen: false).actualizarPunto(i, ptoInspeccionSeleccionados[i]); 
-      }
       await PtosInspeccionServices.showDialogs(context, acciones.length == 1 ? 'Accion creada' : 'Acciones creadas', true, true);
     }
   }
