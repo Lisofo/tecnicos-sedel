@@ -1,5 +1,6 @@
 // ignore_for_file: use_build_context_synchronously, void_checks
 
+import 'package:app_tec_sedel/config/router/router.dart';
 import 'package:app_tec_sedel/models/orden.dart';
 import 'package:app_tec_sedel/models/revision_tarea.dart';
 import 'package:app_tec_sedel/models/tarea.dart';
@@ -115,8 +116,7 @@ class _TareasPageState extends State<TareasPage> {
                   )
                 ),
                   items: tareas,
-                  popupProps: const PopupProps.menu(
-                      showSearchBox: true, searchDelay: Duration.zero),
+                  popupProps: const PopupProps.menu(showSearchBox: true, searchDelay: Duration.zero),
                   onChanged: (value) {
                     setState(() {
                       selectedTarea = value;
@@ -200,10 +200,12 @@ class _TareasPageState extends State<TareasPage> {
                                     foregroundColor: Colors.red,
                                   ),
                                   onPressed: () async {
-                                    Navigator.of(context).pop(true);
                                     await _revisionServices.deleteRevisionTarea(context, orden, revisionTareasList[i], token);
                                     statusCodeTareas = await _revisionServices.getStatusCode();
                                     await _revisionServices.resetStatusCode();
+                                    if(statusCodeTareas == 1){
+                                      Navigator.of(context).pop(true);
+                                    }
                                   },
                                   child: const Text("BORRAR")
                                 ),
@@ -221,7 +223,6 @@ class _TareasPageState extends State<TareasPage> {
                             content: Text('La tarea $item ha sido borrada'),
                           ));
                         }
-                        
                       },
                       background: Container(
                         color: Colors.red,
