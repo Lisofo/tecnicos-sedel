@@ -377,8 +377,12 @@ class _MaterialesPageState extends State<MaterialesPage> {
                                           foregroundColor: Colors.red,
                                         ),
                                         onPressed: () async {
-                                          Navigator.of(context).pop(true);
-                                          await MaterialesServices().deleteRevisionMaterial(context, orden, revisionMaterialesList[i], token);
+                                          await _materialesServices.deleteRevisionMaterial(context, orden, revisionMaterialesList[i], token);
+                                          statusCodeRevision = await _materialesServices.getStatusCode();
+                                          await _materialesServices.resetStatusCode();
+                                          if(statusCodeRevision == 1) {
+                                            Navigator.of(context).pop(true);
+                                          }
                                         },
                                         child: const Text("BORRAR")
                                       ),
@@ -388,12 +392,15 @@ class _MaterialesPageState extends State<MaterialesPage> {
                               );
                             },
                             onDismissed: (direction) {
-                              setState(() {
-                                revisionMaterialesList.removeAt(i);
-                              });
-                              ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                                content: Text('$item borrado'),
-                              ));
+                              if(statusCodeRevision == 1){
+                                setState(() {
+                                  revisionMaterialesList.removeAt(i);
+                                });
+                                ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                                  content: Text('$item borrado'),
+                                ));
+                              }
+                              statusCodeRevision = null;
                             },
                             background: Container(
                               color: Colors.red,
@@ -414,7 +421,6 @@ class _MaterialesPageState extends State<MaterialesPage> {
                                       onPressed: !estaBuscando
                                         ? () async {
                                           estaBuscando = true;
-                                          
                                           setState(() {});
                                             if (marcaId == 0 || (orden.estado == 'PENDIENTE' || orden.estado == 'FINALIZADA')) {
                                               ScaffoldMessenger.of(context).showSnackBar(
@@ -429,22 +435,23 @@ class _MaterialesPageState extends State<MaterialesPage> {
                                               plagas = await PlagaServices().getPlagas(context, token);
                                               lotes = await MaterialesServices().getLotes(context, item.material.materialId, token);
                                               metodosAplicacion = await MaterialesServices().getMetodosAplicacion(context, token);
-                                              estaBuscando = false;  
+                                              estaBuscando = false;
+                                              setState(() {});  
                                             } catch (e) {
                                               plagas = [];
                                               lotes = [];
                                               metodosAplicacion = [];
                                               estaBuscando = false;
+                                              setState(() {});
                                             }
                                             if(plagas.isNotEmpty && lotes.isNotEmpty && metodosAplicacion.isNotEmpty){
-                                              setState(() {
-                                                estaBuscando = true;
-                                              });
                                               bool resultado = await editMaterial(context, item);
                                               setState(() {
                                                 estaBuscando = resultado;
                                               });
+                                              
                                             }
+                                            setState(() {});
                                           }
                                         : null,
                                       icon: const Icon(Icons.edit)

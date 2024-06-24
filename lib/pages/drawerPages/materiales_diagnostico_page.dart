@@ -299,9 +299,13 @@ class _MaterialesDiagnosticoPageState extends State<MaterialesDiagnosticoPage> {
                                           foregroundColor: Colors.red,
                                         ),
                                         onPressed: () async {
-                                          Navigator.of(context).pop(true);
+                                          
                                           await _materialesDiagnisticoServices.deleteRevisionMaterial(context, orden,revisionMaterialesList[i],token);
                                           statusCodeMaterial = await _materialesDiagnisticoServices.getStatusCode();
+                                          await _materialesDiagnisticoServices.resetStatusCode();
+                                          if(statusCodeMaterial == 1){
+                                            Navigator.of(context).pop(true);
+                                          }
                                         },
                                         child: const Text("BORRAR")
                                       ),
@@ -319,7 +323,7 @@ class _MaterialesDiagnosticoPageState extends State<MaterialesDiagnosticoPage> {
                                   content: Text('$item borrado'),
                                 ));
                               }
-                              
+                              statusCodeMaterial = null;
                             },
                             background: Container(
                               color: Colors.red,
