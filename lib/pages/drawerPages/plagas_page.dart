@@ -253,6 +253,10 @@ class _PlagasPageState extends State<PlagasPage> {
                                     onPressed: () async {
                                       await _revisionServices.deleteRevisionPlaga(context,orden,revisionPlagasList[index],token);
                                       statusCodeRevision = await _revisionServices.getStatusCode();
+                                      await _revisionServices.resetStatusCode();
+                                      if(statusCodeRevision == 1){
+                                        Navigator.of(context).pop(true);
+                                      }
                                     },
                                     child: const Text("BORRAR")
                                   ),
@@ -263,7 +267,6 @@ class _PlagasPageState extends State<PlagasPage> {
                         },
                         onDismissed: (direction) async {
                           if(statusCodeRevision == 1){
-                            Navigator.of(context).pop(true);
                             setState(() {
                             revisionPlagasList.removeAt(index);
                             });
@@ -271,6 +274,7 @@ class _PlagasPageState extends State<PlagasPage> {
                               content: Text('La plaga $item ha sido borrada'),
                             ));
                           }
+                          statusCodeRevision = null;
                         },
                         background: Container(
                           color: Colors.red,

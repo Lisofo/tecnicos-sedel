@@ -318,17 +318,19 @@ class _FirmaState extends State<Firma> {
                           context: context,
                           builder: (BuildContext context) {
                             return borrarDesdeDismiss(context, index);
-                            //todo Dismis revisar
                           }
                         );
                       },
                       onDismissed: (direction) async {
-                        setState(() {
-                          client.removeAt(index);
-                        });
-                        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                          content: Text('La firma de $item ha sido borrada'),
-                        ));
+                        if(statusCode == 1){
+                          setState(() {
+                            client.removeAt(index);
+                          });
+                          ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                            content: Text('La firma de $item ha sido borrada'),
+                          ));
+                        }
+                        statusCode = null;
                       },
                       background: Container(
                         color: Colors.red,
@@ -417,8 +419,12 @@ class _FirmaState extends State<Firma> {
             foregroundColor: Colors.red,
           ),
           onPressed: () async {
-            Navigator.of(context).pop(true);
             await _revisionServices.deleteRevisionFirma(context, orden, client[index], token);
+            statusCode = await _revisionServices.getStatusCode();
+            await _revisionServices.resetStatusCode();
+            if(statusCode == 1){
+              Navigator.of(context).pop(true);
+            }
           },
           child: const Text("BORRAR")
         ),

@@ -298,8 +298,7 @@ class _MaterialesDiagnosticoPageState extends State<MaterialesDiagnosticoPage> {
                                         style: TextButton.styleFrom(
                                           foregroundColor: Colors.red,
                                         ),
-                                        onPressed: () async {
-                                          
+                                        onPressed: () async { 
                                           await _materialesDiagnisticoServices.deleteRevisionMaterial(context, orden,revisionMaterialesList[i],token);
                                           statusCodeMaterial = await _materialesDiagnisticoServices.getStatusCode();
                                           await _materialesDiagnisticoServices.resetStatusCode();
