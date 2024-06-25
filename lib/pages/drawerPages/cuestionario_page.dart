@@ -20,7 +20,7 @@ class _CuestionarioPageState extends State<CuestionarioPage> {
   String selectedPregunta = '';
   final TextEditingController comentarioController = TextEditingController();
   late Orden orden = Orden.empty();
-
+  final _ordenControlServices = OrdenControlServices();
   List<ControlOrden> controles =[];
   String token = '';
   List<String> grupos = [];
@@ -28,6 +28,7 @@ class _CuestionarioPageState extends State<CuestionarioPage> {
   List<String> models = [];
   bool cargoDatosCorrectamente = false;
   bool cargando = true;
+  int? statusCodeControles;
 
   
 
@@ -92,11 +93,14 @@ class _CuestionarioPageState extends State<CuestionarioPage> {
             children: [
               Container( 
                 decoration: BoxDecoration(
-                    border: Border.all(
-                        width: 2, color: colors.primary),
-                    borderRadius: BorderRadius.circular(5)),
+                  border: Border.all(width: 2, color: colors.primary),
+                  borderRadius: BorderRadius.circular(5)
+                ),
                 child: DropdownButtonFormField(
-                  decoration: const InputDecoration(border: InputBorder.none),
+                  decoration: const InputDecoration(
+                    border: InputBorder.none,
+                  ),
+                  hint: const Text('Seleccione un grupo de controles', textAlign: TextAlign.center,),
                   items: grupos.map((e) {
                     return DropdownMenuItem(
                       value: e,
@@ -205,7 +209,7 @@ class _CuestionarioPageState extends State<CuestionarioPage> {
           color: Colors.grey.shade200,
           child: CustomButton(
             onPressed: () async {
-              await postPut(context);
+              await postControles(context);
             },
             text: 'Guardar',
             tamano: 20,
@@ -216,20 +220,25 @@ class _CuestionarioPageState extends State<CuestionarioPage> {
     );
   }
 
-  Future<void> postPut(BuildContext context) async {
-    for(var i = 0; i < controles.length; i++){
-      if(controles[i].controlRegId == 0 && controles[i].respuesta.isNotEmpty){
-        await OrdenControlServices().postControl(context, orden, controles[i], token);
-      }else{
-        await OrdenControlServices().putControl(context, orden, controles[i], token);
+  Future<void> postControles(BuildContext context) async {  
+    List<ControlOrden> controlesSeleccionados = [];
+    for(var control in controles) {
+      if(control.respuesta.isNotEmpty){
+        controlesSeleccionados.add(control);
       }
-    }
-    await OrdenControlServices.showDialogs(context, 'Controles actualizados correctamente', false, false);
+    }    
+    await _ordenControlServices.postControles(context, orden, controlesSeleccionados, token);
+    statusCodeControles = await _ordenControlServices.getStatusCode();
+    await _ordenControlServices.resetStatusCode();
+    if(statusCodeControles == 1){
+      await OrdenControlServices.showDialogs(context, 'Controles actualizados correctamente', false, false);
+    }    
     setState(() {});
+    statusCodeControles = null;
   }
 
   void popUpComentario(BuildContext context, ControlOrden pregunta) {
-    if(pregunta.controlRegId != 0){
+    if(pregunta.controlRegId != 0 || pregunta.comentario != ''){
       comentarioController.text = pregunta.comentario;
     }else{comentarioController.text = '';}
 
