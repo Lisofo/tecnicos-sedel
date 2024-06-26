@@ -78,7 +78,7 @@ class _TareasPageState extends State<TareasPage> {
           style: const TextStyle(color: Colors.white),
         ),
       ),
-      body:cargando ? const Center(
+      body: cargando ? const Center(
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.center,
           mainAxisAlignment: MainAxisAlignment.center,
@@ -110,9 +110,7 @@ class _TareasPageState extends State<TareasPage> {
                 ),
                 child: DropdownSearch(
                   dropdownDecoratorProps: const DropDownDecoratorProps(
-                  dropdownSearchDecoration: InputDecoration(
-                    hintText: 'Seleccione una tarea'
-                  )
+                  dropdownSearchDecoration: InputDecoration(hintText: 'Seleccione una tarea')
                 ),
                   items: tareas,
                   popupProps: const PopupProps.menu(showSearchBox: true, searchDelay: Duration.zero),
@@ -215,12 +213,12 @@ class _TareasPageState extends State<TareasPage> {
                       },
                       onDismissed: (direction) async {
                         if(statusCodeTareas == 1){
-                          setState(() {
-                            revisionTareasList.removeAt(i);
-                          });
                           ScaffoldMessenger.of(context).showSnackBar(SnackBar(
                             content: Text('La tarea $item ha sido borrada'),
                           ));
+                          setState(() {
+                            revisionTareasList.removeAt(i);
+                          });
                         }
                         statusCodeTareas = null;
                       },
