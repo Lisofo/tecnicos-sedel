@@ -77,7 +77,7 @@ class _MaterialesPageState extends State<MaterialesPage> {
 
   Future<bool> _showMaterialDetails(BuildContext context, Materiales material) async {
     selectedMetodo = MetodoAplicacion.empty();
-    selectedLote = Lote.empty();  
+    selectedLote = Lote.empty();
     showDialog(
       context: context,
       builder: (BuildContext context) {
