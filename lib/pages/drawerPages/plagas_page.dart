@@ -201,7 +201,6 @@ class _PlagasPageState extends State<PlagasPage> {
                       ));
                       agregandoPlaga = false;
                       return Future.value(false);
-                      
                     }
                     agregandoPlaga = false;
                     setState(() {});
@@ -390,7 +389,8 @@ class _PlagasPageState extends State<PlagasPage> {
         duration: const Duration(milliseconds: 500),
         curve: Curves.easeInOut,
       );
-      statusCodeRevision = null;
+      
     }
+    statusCodeRevision = null;
   }
 }

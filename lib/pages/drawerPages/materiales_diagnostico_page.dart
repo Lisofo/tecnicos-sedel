@@ -386,13 +386,11 @@ class _MaterialesDiagnosticoPageState extends State<MaterialesDiagnosticoPage> {
                                                 ),
                                                 TextButton(
                                                   style: TextButton.styleFrom(foregroundColor:Colors.red,),
-                                                  onPressed: () async {
-                                                    if(!borrando){
-                                                      borrando = true;
-                                                      await borrarMaterial(context, item, i);
-                                                      borrando = false;
-                                                    }
-                                                  },
+                                                  onPressed: !borrando ? () async {
+                                                    borrando = true;
+                                                    setState(() {});
+                                                    await borrarMaterial(context, item, i);
+                                                  } : null,
                                                   child: const Text("BORRAR")
                                                 ),
                                               ],
@@ -616,7 +614,7 @@ class _MaterialesDiagnosticoPageState extends State<MaterialesDiagnosticoPage> {
                   cantidadController.text = '';
                   revisionMaterialesList = await _materialesDiagnisticoServices.getRevisionMateriales(context, orden, token);
                 }
-                
+                statusCodeMaterial = null;
                 setState(() {});
               },
             ),
