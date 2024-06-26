@@ -2,6 +2,7 @@
 
 import 'dart:typed_data';
 
+import 'package:app_tec_sedel/config/router/router.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:signature/signature.dart';
@@ -323,12 +324,12 @@ class _FirmaState extends State<Firma> {
                       },
                       onDismissed: (direction) async {
                         if(statusCode == 1){
-                          setState(() {
-                            client.removeAt(index);
-                          });
                           ScaffoldMessenger.of(context).showSnackBar(SnackBar(
                             content: Text('La firma de $item ha sido borrada'),
                           ));
+                          setState(() {
+                            client.removeAt(index);
+                          });
                         }
                         statusCode = null;
                       },
@@ -526,9 +527,14 @@ class _FirmaState extends State<Firma> {
                 await _revisionServices.resetStatusCode();
 
                 if (statusCode == 1){
+                  ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                    content: Text('La firma de ${cliente.nombre} ha sido borrada'),
+                  ));
+
                   setState(() {
                     client.removeAt(index);
                   });
+                  router.pop();
                 }
                 statusCode = null;
                 

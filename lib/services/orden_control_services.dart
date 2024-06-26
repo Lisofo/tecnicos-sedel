@@ -205,7 +205,7 @@ class OrdenControlServices{
     String link = '$apiLink${orden.ordenTrabajoId}/revisiones/${orden.otRevisionId}/controles/batch';
     print(link);
     List datos = [];
-    var mapa;
+    Map<String, dynamic> mapa;
     for(int i = 0; i < controles.length; i++){
       mapa = ({
         "metodo": controles[i].controlRegId == 0 ? "POST" : "PUT",

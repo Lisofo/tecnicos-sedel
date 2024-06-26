@@ -1,5 +1,6 @@
 // ignore_for_file: use_build_context_synchronously, avoid_init_to_null, void_checks, avoid_print
 
+import 'package:app_tec_sedel/config/router/router.dart';
 import 'package:app_tec_sedel/models/manuales_materiales.dart';
 import 'package:app_tec_sedel/models/material.dart';
 import 'package:app_tec_sedel/models/orden.dart';
@@ -315,12 +316,12 @@ class _MaterialesDiagnosticoPageState extends State<MaterialesDiagnosticoPage> {
                             },
                             onDismissed: (direction) {
                               if(statusCodeMaterial == 1){
+                                ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                                  content: Text('El material ${item.material.descripcion} ha sido borrado'),
+                                ));
                                 setState(() {
                                   revisionMaterialesList.removeAt(i);
                                 });
-                                ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                                  content: Text('$item borrado'),
-                                ));
                               }
                               statusCodeMaterial = null;
                             },
@@ -446,11 +447,12 @@ class _MaterialesDiagnosticoPageState extends State<MaterialesDiagnosticoPage> {
 
     if (statusCodeMaterial == 1) {
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-        content: Text('$item borrado'),
+        content: Text('El material ${revisionMaterialesList[i].material.descripcion} ha sido borrado'),
       ));
       setState(() {
         revisionMaterialesList.removeAt(i);
       });
+      router.pop();
     }
     statusCodeMaterial = null;
     borrando = false;

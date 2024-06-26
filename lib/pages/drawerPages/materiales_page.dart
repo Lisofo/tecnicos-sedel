@@ -393,12 +393,12 @@ class _MaterialesPageState extends State<MaterialesPage> {
                             },
                             onDismissed: (direction) {
                               if(statusCodeRevision == 1){
+                                ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                                  content: Text('El material ${item.material.descripcion} ha sido borrado'),
+                                ));
                                 setState(() {
                                   revisionMaterialesList.removeAt(i);
                                 });
-                                ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                                  content: Text('$item borrado'),
-                                ));
                               }
                               statusCodeRevision = null;
                             },
@@ -532,9 +532,13 @@ class _MaterialesPageState extends State<MaterialesPage> {
                   statusCodeRevision = await _materialesServices.getStatusCode();
                   await _materialesServices.resetStatusCode();
                   if(statusCodeRevision == 1) {
+                    ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                      content: Text('El material ${revisionMaterialesList[i].material.descripcion} ha sido borrado'),
+                    ));
                     setState(() {
                       revisionMaterialesList.removeAt(i);
                     });
+                    router.pop();
                   }
                   statusCodeRevision = null;
                   borrando = false;

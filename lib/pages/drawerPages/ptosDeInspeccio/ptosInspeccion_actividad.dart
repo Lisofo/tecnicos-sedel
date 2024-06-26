@@ -87,8 +87,7 @@ class _PtosInspeccionActividadState extends State<PtosInspeccionActividad> {
       bool modificando = ptoInspeccionSeleccionados.length == 1 && ptoInspeccionSeleccionados[0].piAccionId == accion;
       if (modificando) {
         for (var tarea in tareas) {
-          tarea.selected = ptoInspeccionSeleccionados[0].tareas
-            .any((asignada) => asignada.tareaId == tarea.tareaId);
+          tarea.selected = ptoInspeccionSeleccionados[0].tareas.any((asignada) => asignada.tareaId == tarea.tareaId);
         }
         materialesSeleccionados = ptoInspeccionSeleccionados[0].materiales;
         plagasSeleccionadas = ptoInspeccionSeleccionados[0].plagas;

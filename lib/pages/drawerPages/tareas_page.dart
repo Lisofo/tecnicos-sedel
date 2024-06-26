@@ -1,4 +1,5 @@
 // ignore_for_file: use_build_context_synchronously, void_checks
+import 'package:app_tec_sedel/config/router/router.dart';
 import 'package:app_tec_sedel/models/orden.dart';
 import 'package:app_tec_sedel/models/revision_tarea.dart';
 import 'package:app_tec_sedel/models/tarea.dart';
@@ -297,6 +298,7 @@ class _TareasPageState extends State<TareasPage> {
       setState(() {
         revisionTareasList.removeAt(i);
       });
+      router.pop();
     }
     statusCodeTareas = null;
     borrando = false;

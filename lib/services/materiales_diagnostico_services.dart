@@ -1,7 +1,6 @@
 // ignore_for_file: avoid_print, use_build_context_synchronously
 
 import 'package:app_tec_sedel/config/config.dart';
-import 'package:app_tec_sedel/config/router/router.dart';
 import 'package:app_tec_sedel/models/material.dart';
 import 'package:app_tec_sedel/models/materialesTPI.dart';
 import 'package:app_tec_sedel/models/orden.dart';
@@ -414,7 +413,7 @@ class MaterialesDiagnosticoServices {
       statusCode = 1;
       if (resp.statusCode == 204) {
         // showDialogs(context, 'Material borrado', true, false);
-        router.pop(context);
+        // router.pop(context);
       }
     } catch (e) {
       statusCode = 0;

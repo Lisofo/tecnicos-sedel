@@ -1,5 +1,6 @@
 // ignore_for_file: use_build_context_synchronously, void_checks
 
+import 'package:app_tec_sedel/config/router/router.dart';
 import 'package:app_tec_sedel/models/gradoInfestacion.dart';
 import 'package:app_tec_sedel/models/orden.dart';
 import 'package:app_tec_sedel/models/plaga.dart';
@@ -353,6 +354,7 @@ class _PlagasPageState extends State<PlagasPage> {
       setState(() {
         revisionPlagasList.removeAt(index);
       });
+      router.pop();
     }
     statusCodeRevision = null;
     borrando = false;

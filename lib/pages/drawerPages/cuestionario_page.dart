@@ -29,7 +29,7 @@ class _CuestionarioPageState extends State<CuestionarioPage> {
   bool cargoDatosCorrectamente = false;
   bool cargando = true;
   int? statusCodeControles;
-
+  late int marcaId = 0;
   
 
   @override
@@ -42,6 +42,7 @@ class _CuestionarioPageState extends State<CuestionarioPage> {
     token = context.read<OrdenProvider>().token;
     try {
       orden = context.read<OrdenProvider>().orden;
+      marcaId = context.read<OrdenProvider>().marcaId;
       controles = await OrdenControlServices().getControlOrden(context, orden, token);
 
       for(var i = 0; i < controles.length; i++){
@@ -74,8 +75,8 @@ class _CuestionarioPageState extends State<CuestionarioPage> {
             crossAxisAlignment: CrossAxisAlignment.center,
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-                CircularProgressIndicator(),
-                Text('Cargando, por favor espere...')
+              CircularProgressIndicator(),
+              Text('Cargando, por favor espere...')
             ],
           ),
         ) : !cargoDatosCorrectamente ? 
@@ -144,8 +145,9 @@ class _CuestionarioPageState extends State<CuestionarioPage> {
                       children: [
                         Flexible(
                           child: SizedBox(
-                              width: MediaQuery.of(context).size.width,
-                              child: Text(pregunta.pregunta)),
+                            width: MediaQuery.of(context).size.width,
+                            child: Text(pregunta.pregunta)
+                          ),
                         ),
                         IconButton(
                           icon: const Icon(Icons.comment),
@@ -209,6 +211,12 @@ class _CuestionarioPageState extends State<CuestionarioPage> {
           color: Colors.grey.shade200,
           child: CustomButton(
             onPressed: () async {
+              if(marcaId == 0 || (orden.estado == 'PENDIENTE' || orden.estado == 'FINALIZADA')){
+                ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+                  content: Text('No puede de ingresar o editar datos.'),
+                ));
+                return Future.value(false);
+              }
               await postControles(context);
             },
             text: 'Guardar',
