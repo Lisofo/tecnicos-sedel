@@ -44,12 +44,13 @@ class _CuestionarioPageState extends State<CuestionarioPage> {
       orden = context.read<OrdenProvider>().orden;
       marcaId = context.read<OrdenProvider>().marcaId;
       controles = await OrdenControlServices().getControlOrden(context, orden, token);
-
+      controles.sort((a, b) => a.pregunta.compareTo(b.pregunta));
       for(var i = 0; i < controles.length; i++){
         models.add(controles[i].grupo);
       }
       Set<String> conjunto = Set.from(models);
       grupos = conjunto.toList();
+      grupos.sort((a, b) => a.compareTo(b));
       if (controles.isNotEmpty){
         cargoDatosCorrectamente = true;
       }
