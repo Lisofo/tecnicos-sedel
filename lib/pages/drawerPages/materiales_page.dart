@@ -302,7 +302,7 @@ class _MaterialesPageState extends State<MaterialesPage> {
                     try {
                       plagas = await PlagaServices().getPlagas(context, token);
                       lotes = await MaterialesServices().getLotes(context, selectedMaterial.materialId, token);
-                      metodosAplicacion = await MaterialesServices().getMetodosAplicacion(context, token);  
+                      metodosAplicacion = await MaterialesServices().getMetodosAplicacion(context, token);
                     } catch (e) {
                       plagas = [];
                       lotes = [];
@@ -310,7 +310,7 @@ class _MaterialesPageState extends State<MaterialesPage> {
                       estaBuscando = false;
                       setState(() {});
                     }
-                    if(plagas.isNotEmpty && lotes.isNotEmpty && metodosAplicacion.isNotEmpty){
+                    if(plagas.isNotEmpty && metodosAplicacion.isNotEmpty){
                       bool resultado = await _showMaterialDetails(context, selectedMaterial);
                       setState(() {
                         estaBuscando = resultado;
