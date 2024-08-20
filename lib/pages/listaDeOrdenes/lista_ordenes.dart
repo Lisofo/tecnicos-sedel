@@ -17,9 +17,11 @@ class ListaOrdenes extends StatefulWidget {
 }
 
 DateTime fecha = DateTime.now();
+DateTime fecha2 = DateTime(fecha.year, fecha.month, fecha.day + 1);
 
-String fechaHoy = '${fecha.year}-${fecha.month}-${fecha.day}';
-String fechaManana = '${fecha.year}-${fecha.month}-${fecha.day + 1}';
+
+String fechaHoy = DateFormat('yyyy-MM-dd', 'es').format(fecha);
+String fechaManana = DateFormat('yyyy-MM-dd', 'es').format(fecha2);
 List<String> fechas = [fechaHoy, fechaManana, 'Anteriores'];
 
 class _ListaOrdenesState extends State<ListaOrdenes> {

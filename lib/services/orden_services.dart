@@ -62,7 +62,7 @@ class OrdenServices {
   Future getOrden(BuildContext context, String tecnicoId, String desde, String hasta, String token) async {
     String link = apiLink;
     String linkFiltrado = link += desde == 'Anteriores'
-        ? 'api/v1/ordenes/?sort=fechaDesde&tecnicoId=$tecnicoId&estado=EN PROCESO'
+        ? 'api/v1/ordenes/?sort=fechaDesde&tecnicoId=$tecnicoId&estado=EN PROCESO,PENDIENTE'
         : 'api/v1/ordenes/?sort=fechaDesde&tecnicoId=$tecnicoId&fechaDesde=$desde&fechaHasta=$hasta';
 
     try {
