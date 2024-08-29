@@ -71,7 +71,7 @@ class MaterialesServices {
   }
 
   Future getMateriales(BuildContext context,String token) async {
-    String link = '${apiUrl}api/v1/materiales/?enAppTecnico=S&enUso=S';
+    String link = '${apiUrl}api/v1/materiales/?enAppTecnico=S&enUso=S&sort=descripcion';
     try {
       var headers = {'Authorization': token};
       var resp = await _dio.request(
@@ -114,8 +114,7 @@ class MaterialesServices {
   }
 
   Future getMaterialesXTPI(BuildContext context,TipoPtosInspeccion tPI, String token) async {
-    String link =
-        '${apiUrl}api/v1/tipos/puntos/${tPI.tipoPuntoInspeccionId}/materiales?sort=descripcion';
+    String link = '${apiUrl}api/v1/tipos/puntos/${tPI.tipoPuntoInspeccionId}/materiales?sort=descripcion';
 
     try {
       var headers = {'Authorization': token};
@@ -202,7 +201,7 @@ class MaterialesServices {
   }
 
   Future getMetodosAplicacion(BuildContext context,String token) async {
-    String link = '${apiUrl}api/v1/metodos-aplicacion/';
+    String link = '${apiUrl}api/v1/metodos-aplicacion/?sort=descripcion';
     try {
       var headers = {'Authorization': token};
       var resp = await _dio.request(
