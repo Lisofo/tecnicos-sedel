@@ -1,5 +1,6 @@
 // ignore_for_file: use_build_context_synchronously, avoid_print
 
+import 'package:app_tec_sedel/models/menu.dart';
 import 'package:app_tec_sedel/models/ubicacion.dart';
 import 'package:app_tec_sedel/services/orden_services.dart';
 import 'package:app_tec_sedel/services/revision_services.dart';
@@ -331,39 +332,42 @@ class _OrdenInternaState extends State<OrdenInterna> {
   }
 
   Widget _listaItems() {
+    final colors = Theme.of(context).colorScheme;
     final String tipoOrden = orden.tipoOrden.codTipoOrden;
     return FutureBuilder(
-      future: menuProvider.cargarData(tipoOrden),
+      future: menuProvider.cargarData(context, tipoOrden, token),
       initialData: const [],
       builder: (context, snapshot) {
-        return ListView(
-          children: _listaItemsDrawer(snapshot.data, context),
-        );
+        if(snapshot.connectionState == ConnectionState.waiting) {
+          return const Center(child: CircularProgressIndicator(),);
+        } else if(snapshot.hasError) {
+          return Center(child: Text('Error: ${snapshot.error}'));
+        } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
+          return const Center(child: Text('No hay datos disponibles'));
+        } else {
+          final List<Ruta> rutas = snapshot.data as List<Ruta>;
+
+          return ListView.separated(
+            itemCount: rutas.length,
+            itemBuilder: (context, i) {
+              final Ruta ruta = rutas[i];
+              return ListTile(
+                title: Text(ruta.texto),
+                leading: getIcon(ruta.icon, context),
+                trailing: Icon(
+                  Icons.keyboard_arrow_right,
+                  color: colors.secondary,
+                ),
+                onTap: () {
+                  router.push(ruta.ruta);
+                } 
+              );
+            }, 
+            separatorBuilder: (BuildContext context, int index) { return const Divider(); },
+          ); 
+        }
       },
     );
-  }
-
-  List<Widget> _listaItemsDrawer(data, BuildContext context) {
-    final colors = Theme.of(context).colorScheme;
-    final List<Widget> opciones = [];
-    data.forEach((opt) {
-      final widgetTemp = ListTile(
-        title: Text(opt['texto']),
-        leading: getIcon(opt['icon'], context),
-        trailing: Icon(
-          Icons.keyboard_arrow_right,
-          color: colors.secondary,
-        ),
-        onTap: () {
-          router.push(opt['ruta']);
-        },
-      );
-
-      opciones
-        ..add(widgetTemp)
-        ..add(const Divider());
-    });
-    return opciones;
   }
 
   cambiarEstado(String estado) async {
