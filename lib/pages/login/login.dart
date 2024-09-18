@@ -52,7 +52,7 @@ class _LoginState extends State<Login> {
             const SizedBox(height: 40),
             const CircleAvatar(
                 radius: 70.5,
-                backgroundImage: AssetImage('images/sedelLogo.jpeg')),
+                backgroundImage: AssetImage('images/sedelLogo.jpg')),
             const SizedBox(
               height: 40,
             ),

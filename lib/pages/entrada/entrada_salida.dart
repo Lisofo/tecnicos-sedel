@@ -55,10 +55,10 @@ class _EntradSalidaState extends State<EntradSalida> {
     final colors = Theme.of(context).colorScheme;
     return WillPopScope(
       onWillPop: () async {
-        return await showDialog(
+        print('Estoy tratando de salir');
+        final shouldPop = await showDialog<bool>(
           context: context,
           builder: (context) => AlertDialog(
-            surfaceTintColor: Colors.white,
             title: const Text('¿Desea salir de la aplicación?'),
             actions: <Widget>[
               TextButton(
@@ -72,6 +72,7 @@ class _EntradSalidaState extends State<EntradSalida> {
             ],
           ),
         );
+        return shouldPop ?? false;
       },
       child: SafeArea(
         child: Scaffold(
