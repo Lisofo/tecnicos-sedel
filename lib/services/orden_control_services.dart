@@ -236,7 +236,7 @@ class OrdenControlServices{
       if (resp.statusCode == 201) {
         for(int i = 0; i < controles.length; i++){
           if(controles[i].controlRegId == 0){
-            if(resp.data[0]["status"] == 201){
+            if(resp.data[i]["status"] == 201){
               controles[i].controlRegId = resp.data[0]["content"]["controlRegId"];
               print(controles[i].controlRegId);
             }
