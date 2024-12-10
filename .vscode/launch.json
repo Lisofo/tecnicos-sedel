@@ -12,7 +12,7 @@
             "program": "lib/main.dart",
             "args": [
                 "--dart-define-from-file",
-                "config.json"
+                "config_prod.json"
               ]
         }
         
