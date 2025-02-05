@@ -1,3 +1,16 @@
+buildscript {
+    ext.kotlin_version = '1.8.22' // Asegúrate de que esta versión sea compatible con tus dependencias
+    repositories {
+        google()
+        mavenCentral()
+    }
+    dependencies {
+        // Aquí van los classpath necesarios para los plugins
+        classpath 'com.android.tools.build:gradle:8.1.1' // AGP versión 8.1.1
+        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version" // Usar la versión de Kotlin definida
+    }
+}
+
 allprojects {
     repositories {
         google()
@@ -5,6 +18,7 @@ allprojects {
     }
 }
 
+// Configuración del directorio de compilación
 rootProject.buildDir = '../build'
 subprojects {
     project.buildDir = "${rootProject.buildDir}/${project.name}"
@@ -13,6 +27,7 @@ subprojects {
     project.evaluationDependsOn(':app')
 }
 
+// Tarea para limpiar el proyecto
 tasks.register("clean", Delete) {
     delete rootProject.buildDir
 }

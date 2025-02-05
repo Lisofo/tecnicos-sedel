@@ -1,4 +1,5 @@
 {
     "APIURL":"https://portalsedel.com.uy/",
-    "APIFSURL":"https://portalsedel.com.uy/"
+    "APIFSURL":"https://portalsedel.com.uy/",
+    "DEBUG_MODE": "false"
 }
